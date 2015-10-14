@@ -1,0 +1,18 @@
+{
+    "meta": {
+        "author": "",
+        "email": "",
+
+        "title": "Floodfill",
+        "description": "Interactive floodfill",
+        "id": "ks-ph",
+        "language": "javascript",
+        "difficulty": "medium",
+        "mainFile": "main.js",
+        "instrFile": "instr.html",
+        "constructorName": "main",
+        "menuDisplayName": "Floodfill",
+        "requires": {
+        }
+    }
+}

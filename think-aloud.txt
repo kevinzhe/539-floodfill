@@ -1,0 +1,5 @@
+figure out directions based on the code
+start at the 0, look in each direction - repeat for each block, incremetnting by 1
+go back up the stack to the highest num
+note some are unreachable
+

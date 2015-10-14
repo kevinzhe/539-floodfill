@@ -1,0 +1,29 @@
+
+GENERAL
+  Board/grid with depths
+  Anything already in the Tk demo
+
+
+QUIZ MODE
+  Click on consecutive ordering of blocks
+  Pre-placed blocks, fill in the numbers
+
+LEARNING MODE
+  Edit mode
+    Grid size, block locations and starting locations, and floodfill order are customizable
+    Preset examples
+  Run mode
+    Trace through execution of floodfill, cell-by-cell
+    Visualize the call stack with mini-stack-frames
+
+In our think-alouds, we found that experienced subjects seemed to ignore/hide the fact that floodfill is recursive. They looked in the directions in each cell given by the code, and treated it as if it were an iteration-type problem. To emphasize (and to bring intuition to) the recursive nature of floodfill, we are going to make stack-visualization a key feature of this demo.
+
+
+
+
+arrow trail
+limit sizes
+actual call stack
+do something about the numbers
+direction on callstack frame headers
+

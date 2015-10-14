@@ -1,0 +1,494 @@
+/* CMU Unlocked stylesheet */
+
+/* IE 10 Fix */
+@-webkit-viewport   { width: device-width; }
+@-moz-viewport      { width: device-width; }
+@-ms-viewport       { width: device-width; }
+@-o-viewport        { width: device-width; }
+@viewport           { width: device-width; }
+
+h1,h2,h3,h4,h5,h6{
+  margin: 0;
+}
+
+
+/* Style for Wrapper */
+.quiz-header {
+  height: 50px;
+}
+
+.quiz-header h2
+{
+  padding:0px;
+  margin:0px;
+}
+
+.quiz-header-left {
+  float:left;
+  padding: 10px;
+  margin:0;
+}
+
+.quiz-header-right {
+  float: left;
+  margin:0;
+  padding: 10px;
+}
+
+/* Style for Canvas */
+iframe {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+pre {
+  white-space: pre;
+  overflow: auto;
+}
+
+/*** Buttons ***/
+/*** Modeled after http://getbootstrap.com/css/ (MIT Licenced) ***/
+.button {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  touch-action: manipulation;
+}
+
+.button-color-white {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+
+.button-color-white:hover, .button-color-white:focus {
+  background-color: #eee;
+}
+
+.button-color-blue {
+  color: #fff;
+  background-color: #337ab7;
+  border-color: #2e6da4;
+}
+
+.button-color-blue:hover, .button-color-blue:focus {
+  background-color: #1764A6;
+}
+
+.button-color-green {
+  color: #fff;
+  background-color: #5cb85c;
+  border-color: #4cae4c;
+}
+
+.button-color-green:hover, .button-color-green:focus {
+  background-color: #319431;
+}
+
+.button-color-lightBlue {
+  color: #fff;
+  background-color: #5bc0de;
+  border-color: #46b8da;
+}
+
+.button-color-lightBlue:hover, .button-color-lightBlue:focus {
+  background-color: #3DB1D4;
+}
+
+.button-color-orange {
+  color: #fff;
+  background-color: #f0ad4e;
+  border-color: #eea236;
+}
+
+.button-color-orange:hover, .button-color-orange:focus {
+  background-color: #E89A2C;
+}
+
+.button-color-red {
+  color: #fff;
+  background-color: #d9534f;
+  border-color: #d43f3a;
+}
+
+.button-color-red:hover, .button-color-red:focus {
+  background-color: #D13732;
+}
+
+.button-size-xsmall {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+
+.button-size-small {
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+
+.button-size-medium {
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 4px;
+}
+
+.button-size-large {
+  padding: 10px 16px;
+  font-size: 18px;
+  line-height: 1.33333;
+  border-radius: 6px;
+}
+
+.button.disabled, .button[disabled], fieldset[disabled] .button {
+  cursor: not-allowed;
+  filter: alpha(opacity=65);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  opacity: .65;
+}
+
+/*** Transitions ***/
+
+.transition-fade {
+  -webkit-transition: opacity 0.3s ease-in-out;
+  -moz-transition: opacity 0.3s ease-in-out;
+  -o-transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.transition-alert-default {
+  -webkit-transition: opacity 5s ease-out;
+  -moz-transition: opacity 5s ease-out;
+  -o-transition: opacity 5s ease-out;
+  transition: opacity 5s ease-out;
+}
+
+.transition-alert-long {
+  -webkit-transition: opacity 8s ease-out;
+  -moz-transition: opacity 8s ease-out;
+  -o-transition: opacity 8s ease-out;
+  transition: opacity 8s ease-out;
+}
+
+/*** User selectability ***/
+.non-selectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+
+/*** Code ***/
+.code-size-small {
+  font-size: 11px;
+}
+
+.code-size-medium {
+  font-size: 13px;
+}
+
+.code-size-large {
+  font-size: 18px;
+}
+
+.code-size-xlarge {
+  font-size: 26px;
+}
+
+.code-border-none {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  border-width: 0;
+  border-color: transparent;
+}
+
+/*** Headers ***/
+.header-size-small {
+  font-size: 16px;
+}
+
+.header-size-medium {
+  font-size: 28px;
+}
+
+.header-size-large {
+  font-size: 36px;
+}
+
+.header-size-xlarge {
+  font-size: 48px;
+}
+
+/*** Paragraphs ***/
+p {
+  padding:0;
+  margin:0;
+}
+.paragraph-size-small {
+  font-size: 11px;
+}
+
+.paragraph-size-medium {
+  font-size: 14px;
+}
+
+.paragraph-size-large {
+  font-size: 18px;
+}
+
+.paragraph-size-xlarge {
+  font-size: 28px;
+}
+
+/*** Input text ***/
+.inputText-size-small {
+  font-size: 11px;
+}
+
+.inputText-size-medium {
+  font-size: 14px;
+}
+
+.inputText-size-large {
+  font-size: 18px;
+}
+
+.inputText-size-xlarge {
+  font-size: 28px;
+}
+
+/*** Text Area ***/
+.textarea-size-small {
+  font-size: 11px;
+}
+
+.textarea-size-medium {
+  font-size: 14px;
+}
+
+.textarea-size-large {
+  font-size: 18px;
+}
+
+.textarea-size-xlarge {
+  font-size: 24px;
+}
+
+.textarea-noresize {
+  resize: none;
+}
+
+/*** Exercise Container ***/
+.container {
+  border-radius: 3px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.exercise-outer-container {
+  margin: 5px;
+  border-radius: 3px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.3);
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-top: 80px;
+  padding-bottom: 60px;
+}
+
+.exercise-inner-container {
+  margin: 0;
+  padding: 0;
+  border-radius: 3px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+/*** Alert ***/
+
+.alert {
+  padding: 15px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.alert-color-green {
+  color: #3c763d;
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+}
+
+.alert-color-red {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}
+
+.alert-color-blue {
+  color: #31708f;
+  background-color: #d9edf7;
+  border-color: #bce8f1;
+}
+
+.alert-color-yellow {
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+}
+
+/*** Feedback Modal ***/
+
+.modal-feedback {
+  margin: 0;
+  padding: 0;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  outline: 0;
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+}
+
+.modal-feedback-header {
+  margin: 0;
+  padding: 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.modal-feedback-title {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.modal-feedback-body {
+  padding: 15px;
+}
+
+/*** Instructions Modal ***/
+.modal.fade .modal-dialog {
+  -webkit-transform: scale(0.1);
+  -moz-transform: scale(0.1);
+  -ms-transform: scale(0.1);
+  transform: scale(0.1);
+  top: 300px;
+  opacity: 0;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+}
+.modal.fade.in .modal-dialog {
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
+}
+
+/*** Key Bindings ***/
+.btn-xs sup.keybinding {
+  top: 0.1em;
+  left: 0;
+  position: relative;
+  float: left;
+  padding: 0px 2px 0px 0px;
+  margin-left: -0.2em;
+}
+
+sup.keybinding {
+  position: absolute;
+  top: 0.3em;
+  left: 0.4em;
+  font-weight: bold;
+  font-size: 0.75em;
+  line-height: 0.5em;
+  opacity: 0.7;
+}
+
+/*** Inline Dropdown ***/
+button.dropdown-inline {
+  font-family: inherit;
+  color: inherit;
+  font-size: .9em;
+  padding: 0px 4px;
+  float: left;
+  z-index: 1;
+}
+
+ul.dropdown-inline {
+  font-family: inherit;
+  font-size: .7em;
+  z-index: 1000;
+}
+
+/*** Pencil ***/
+
+.pencil-div {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  padding: 6px;
+  padding-bottom: 3px;
+  visibility: hidden;
+  margin: 0px;
+  color: #31708f;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  background-color: white;
+
+  -webkit-box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.pencil-header {
+  padding-bottom: 6px;
+}
+
+.pencil-close-button {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, .4);
+  padding: 0;
+  margin-top: -4px;
+  border: none;
+  float: right;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: 0 0;
+}
+
+.pencil-header-text {
+  padding: 0;
+  margin: 0;
+}
+
+.pencil-area {
+  padding: 6px;
+  margin: 0;
+  outline: none;
+}
+

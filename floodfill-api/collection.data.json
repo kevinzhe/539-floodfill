@@ -1,0 +1,15 @@
+{
+    "meta": {
+        "author": "",
+        "email": "",
+        "description": "Interactive something",
+        "id": "answerid-assignment3",
+        "languages": ["python"],
+        "difficulty": "medium",
+        "mode": "practice",
+        "exercises": [{
+            "path": "exercises/floodfill"
+        }]
+    }
+
+}
