@@ -106,45 +106,66 @@ var main = function(ex) {
         },
     };
 
-    var drawArrow = function(start, end){
+    var drawArrow = function(dir, startx, starty, length){
+        switch(dir){
+            case UP:
+                end = (startx, starty-length);
+                break;
+            case DOWN:
+                end = (startx, starty+length);
+                break;
+            case LEFT:
+                end = (startx-length, starty);
+                break;
+            case RIGHT:
+                end = (startx+length, starty);
+                break;
+            default:
+                break;
+
         ex.graphics.ctx.fillStyle = "black";
-        ex.graphics.ctx.moveTo(start);
+        ex.graphics.ctx.moveTo(startx, starty);
         ex.graphics.ctx.lineTo(end);
         ex.graphics.ctx.stroke();
 
+        }
     }
 
     var drawGrid = function(){
-        var width = ex.width()/2;
-        var height = ex.height()/2;
+        var width = (ex.width()/2)/model.cols;
+        var height = (ex.height()/2)/model.rows;
         var margin = 20
         for (var row = 0; row < model.rows; row++) {
             for (var col = 0; col < model.cols; col++) {
-                if (model.board[row][col] == null) {
-                    ex.graphics.fillStyle = "black";
-                    ex.graphics.ctx.fillRect(col*width/model.cols + margin,
-                                               row*height/model.rows + margin,
-                                                width/model.cols,
-                                                height/model.rows);  
+                var cell = model.board[row][col];
+                var xpos = col*width
+                var ypos = row*height
+                if (cell == null) {
+                    ex.graphics.ctx.fillStyle = "black";
+                    ex.graphics.ctx.fillRect(xpos + margin,
+                                            ypos + margin,
+                                            width,
+                                            height);
                 } else {
-                    ex.graphics.fillStyle = "green";
-                    if (model.board[row][col].visited) {
-                        ex.graphics.ctx.fillRect(col*width/model.cols + margin,
-                                                row*height/model.rows + margin,
-                                                width/model.cols,
-                                                height/model.rows); 
-
+                    ex.graphics.ctx.fillStyle = "green";
+                    if (cell.visited) {
+                        ex.graphics.ctx.fillRect(xpos + margin,
+                                            ypos + margin,
+                                            width,
+                                            height); 
+                        drawArrow(cell.direction, col*width, row*width, width)
                     } else {
-                    ex.graphics.ctx.strokeRect(col*width/model.cols + margin,
-                                               row*height/model.rows + margin,
-                                                width/model.cols,
-                                                height/model.rows);
+                    ex.graphics.ctx.fillRect(xpos + margin,
+                                            ypos + margin,
+                                            width,
+                                            height);
                     };
                 };
-
             };
         };
     };
+    model.board[2][3].visited = true;
+    model.board[2][3].direction = UP;
     drawGrid();
 
     ff.init(); 
