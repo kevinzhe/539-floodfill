@@ -104,8 +104,6 @@ var main = function(ex) {
         },
     };
 
-    window.ff = ff;
-
     window.printBoard = function() {
         for (var i = 0; i < model.rows; i++) {
             for (var j = 0; j < model.cols; j++) {
@@ -115,6 +113,49 @@ var main = function(ex) {
             }
         }
     }
+
+    var drawArrow = function(start, end){
+        ex.graphics.ctx.fillStyle = "black";
+        ex.graphics.ctx.moveTo(start);
+        ex.graphics.ctx.lineTo(end);
+        ex.graphics.ctx.stroke();
+
+    }
+
+    var drawGrid = function(){
+        var width = ex.width()/2;
+        var height = ex.height()/2;
+        var margin = 20
+        for (var row = 0; row < model.rows; row++) {
+            for (var col = 0; col < model.cols; col++) {
+                if (model.board[row][col] == null) {
+                    ex.graphics.fillStyle = "black";
+                    ex.graphics.ctx.fillRect(col*width/model.cols + margin,
+                                               row*height/model.rows + margin,
+                                                width/model.cols,
+                                                height/model.rows);  
+                } else {
+                    ex.graphics.fillStyle = "green";
+                    if (model.board[row][col].visited) {
+                        ex.graphics.ctx.fillRect(col*width/model.cols + margin,
+                                                row*height/model.rows + margin,
+                                                width/model.cols,
+                                                height/model.rows); 
+
+                    } else {
+                    ex.graphics.ctx.strokeRect(col*width/model.cols + margin,
+                                               row*height/model.rows + margin,
+                                                width/model.cols,
+                                                height/model.rows);
+                    };
+                };
+
+            };
+        };
+    };
+    drawGrid();
+
+    ff.init(2,2); 
    
 };
 
