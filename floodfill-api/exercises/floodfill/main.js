@@ -33,7 +33,7 @@ var main = function(ex) {
                     } else {
                         row.push({
                             visited: false,
-                            depth: null,
+                            depth: 0,
                             direction: null,
                             row: i,
                             col: j   
@@ -55,7 +55,7 @@ var main = function(ex) {
         nextStack: [],
         prevStack: [],
         init: function(row, col) {
-            ff.nextStack.push({ row: row, col: col });
+            ff.nextStack.push({ row: row, col: col, depth: 0 });
         },
         next: function() {
             if (ff.nextStack.length === 0) {
@@ -74,6 +74,8 @@ var main = function(ex) {
                 return FILLED;
             }
             var curFrame = model.board[cur.row][cur.col];
+            curFrame.direction = cur.direction
+            curFrame.depth = cur.depth
             curFrame.visited = true;
             ff.prevStack.push(cur);
             for (var i = 0; i < model.dirOrder.length; i++) {
@@ -98,12 +100,50 @@ var main = function(ex) {
                         break;
                 }
                 next.direction = dir;
+                next.depth = cur.depth + 1;
                 ff.nextStack.push(next);
             }
+            drawGrid();
             return MOVED;
-        },
+        }
     };
 
+    var drawArrow = function(dir, startx, starty, width, height){
+                var img = "star.png";
+                var endx = startx;
+                var endy = starty;
+        switch(dir){
+            case UP:
+                endx = startx+width/2 - width/4;
+                endy = starty+ height - height/4;
+                img = "up.png";
+                break;
+            case DOWN:
+                endx = startx+width/2 - width/4;
+                endy = starty- height/4;
+                img = "down.png";
+                break;
+            case LEFT:
+                endx = startx+ width - width/4;
+                endy = starty + height/2 - height/4;
+                img = "left.png";
+                break;
+            case RIGHT:
+                endx = startx - width/4;
+                endy = starty + height/2 - height/4;
+                img = "right.png";
+                break;
+            default:
+                endx = startx + width/2 - width/4
+                endy = starty + height/2 - height/4
+                break;
+            }
+            var arrow = ex.createImage(endx,endy,img,{
+                width: (width/2).toString()+"px",
+                height: (height/2).toString()+"px"
+            });
+
+        }
 
     window.printBoard = function() {
         for (var i = 0; i < model.rows; i++) {
@@ -132,28 +172,49 @@ var main = function(ex) {
                                             width,
                                             height);
                 } else {
-                    ex.graphics.ctx.fillStyle = "green";
-                    if (cell.visited) {
+                    console.log(cell.depth)
+                    ex.graphics.ctx.fillStyle = "rgb("+(250*cell.depth/(model.rows*model.cols/2)).toString()+",0,"+(255-250*cell.depth/(model.rows*model.cols)).toString()+")";
+                                        if (cell.visited) {
                         ex.graphics.ctx.fillRect(xpos + margin,
                                             ypos + margin,
                                             width,
                                             height); 
-                        drawArrow(cell.direction, col*width, row*width, width)
+                        drawArrow(cell.direction, xpos+margin, 
+                                ypos+margin, width, height)
+                        ex.graphics.ctx.strokeRect(xpos + margin,
+                                                    ypos + margin,
+                                                    width,
+                                                    height);
                     } else {
-                    ex.graphics.ctx.fillRect(xpos + margin,
-                                            ypos + margin,
-                                            width,
-                                            height);
+                        ex.graphics.ctx.strokeRect(xpos + margin,
+                                                ypos + margin,
+                                                width,
+                                                height);
                     };
                 };
             };
         };
     };
-    model.board[2][3].visited = true;
-    model.board[2][3].direction = UP;
+
+var nextButton = ex.createButton(3*ex.width()/8, 4*ex.height()/5, "next",{
+    width: "20px",
+    height: "20px"
+}).on("click", function(){
+    ff.next();
+});
+var playButton = ex.createButton(2*ex.width()/8, 4*ex.height()/5, "play",{
+    width: "20px",
+    height: "20px"
+}).on("click", function(){
+    ex.onTimer(200,function () {   
+                ff.next();
+            });
+});
+
     drawGrid();
 
     ff.init(2,2); 
-   
+    //while(ff.next()!=DONE){};
+
 };
 
