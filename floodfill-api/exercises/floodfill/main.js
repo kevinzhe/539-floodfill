@@ -1,6 +1,9 @@
 var main = function(ex) {
     window.ex = ex;
-    ex.data.meta.mode = "test1"
+    ex.data.meta.mode = "demo"
+    //ex.data.meta.mode = "assessment1"
+    //ex.data.meta.mode = "assessment2"
+
 
     /* Directions */
     var UP      = 'up';
@@ -18,7 +21,7 @@ var main = function(ex) {
 
     var arrows  = [] //I couldn't find a better way to wipe the arrows.
                     // I'll explain when we meet up.
-
+    var margin = 20
     /* Initialize our model fields */
     var model = {};
     var initModel = function() {
@@ -152,8 +155,10 @@ var main = function(ex) {
             for (var i = 0; i < arrows.length; i++) {
                 arrows[i].remove()
             };
-                ex.stopTimer(onTimer);
-                playButton.text("play")
+                if(ex.data.meta.mode=="demo"){
+                    ex.stopTimer(onTimer);
+                    playButton.text("play")
+                }
                 ff.init(ff.initialRow, ff.initialCol);
                 drawAll();
         },
@@ -162,7 +167,6 @@ var main = function(ex) {
                 return DONE;
             }
             var last = ff.prevStack.pop();
-            console.log(last)
             if (last.success){
                 for (var i = 0; i < 4; i++) {
                     ff.nextStack.pop();  
@@ -228,7 +232,6 @@ var main = function(ex) {
     var drawGrid = function(){
         var width = (ex.width()/2)/model.cols;
         var height = (5*ex.height()/7)/model.rows;
-        var margin = 20
         for (var row = 0; row < model.rows; row++) {
             for (var col = 0; col < model.cols; col++) {
                 var cell = model.board[row][col];
@@ -248,8 +251,12 @@ var main = function(ex) {
                                             width,
                                             height);
                 } else {
-                    console.log(cell.depth)
-                    ex.graphics.ctx.fillStyle = "rgb("+(250*cell.depth/(model.rows*model.cols/2)).toString()+",0,"+(255-250*cell.depth/(model.rows*model.cols)).toString()+")";
+                    ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier"
+                    ex.graphics.ctx.fillStyle = "rgb("+
+                        (250*cell.depth/(model.rows*model.cols/2)).toString()
+                        +",0,"+
+                        (255-250*cell.depth/(model.rows*model.cols)).toString()
+                        +")";
                                         if (cell.visited) {
                         ex.graphics.ctx.fillRect(xpos + margin,
                                             ypos + margin,
@@ -261,6 +268,12 @@ var main = function(ex) {
                                                     ypos + margin,
                                                     width,
                                                     height);
+                        ex.graphics.ctx.fillStyle = "black";
+                        ex.graphics.ctx.textAlign = "end"
+                        ex.graphics.ctx.fillText(
+                            model.board[row][col].depth.toString(),
+                            xpos + margin + width,
+                            ypos + 2*margin)
                     } else {
                         ex.graphics.ctx.strokeRect(xpos + margin,
                                                 ypos + margin,
@@ -272,48 +285,68 @@ var main = function(ex) {
         };
     };
 
+    //Check if the board is fully visited
+    var checkFull = function(){
+        for (var row = 0; row < model.rows; row++) {
+            for(var col = 0; col < model.cols; col++){
+
+                if(model.board[row][col] != null){
+                    if(model.board[row][col].visited == false){return false};
+                }
+            }
+        };
+        return true;
+    }
+
     //Buttons
-        //Next step button
-    var nextButton = ex.createButton(3*ex.width()/8, 4*ex.height()/5, "next",{
-        width: "40px",
-        height: "20px"
-    }).on("click", function(){
-        ff.next();
-        ex.stopTimer(onTimer);
-        playButton.text("play")
-    });
-        //Play and Pause button
-    var playButton = ex.createButton(2*ex.width()/8, 4*ex.height()/5, "play",{
-        width: "40px",
-        height: "20px"
-    })
-    playButton.on("click", function(){
-        if (playButton.text() == "play") {
-        onTimer = ex.onTimer(200,function () { 
-                    ff.next();
-                });
-        playButton.text("pause");
-        } else {
+        //Playthrough buttons
+    if(ex.data.meta.mode == "demo" || ex.data.meta.mode == "assessment2"){
+            //Next step button
+        var nextButton = ex.createButton(3*ex.width()/8+margin,
+                                         4*ex.height()/5, "next",{
+            width: "40px",
+            height: "20px"
+        }).on("click", function(){
+            ff.next();
             ex.stopTimer(onTimer);
             playButton.text("play")
-        };
-    });
-        //Reset Button
-    var resetButton = ex.createButton(ex.width()/8, 4*ex.height()/5, "reset",{
-        width: "40px",
-        height: "20px"
-        }).on("click", function(){
-                    ff.reset();
+        });
+            //Play and Pause button
+        var playButton = ex.createButton(2*ex.width()/8+margin,
+                                         4*ex.height()/5, "play",{
+            width: "40px",
+            height: "20px"
+        })
+        playButton.on("click", function(){
+            if (playButton.text() == "play") {
+            onTimer = ex.onTimer(200,function () { 
+                        ff.next();
+                    });
+            playButton.text("pause");
+            } else {
+                ex.stopTimer(onTimer);
+                playButton.text("play")
+            };
         });
 
 
-    var stepBackButton = ex.createButton(4*ex.width()/8, 4*ex.height()/5, "back",{
-        width: "40px",
-        height: "20px"
-        }).on("click", function(){
-                    ff.stepBack();
-        });
+        var stepBackButton = ex.createButton(ex.width()/8+margin,
+                                             4*ex.height()/5, "back",{
+            width: "40px",
+            height: "20px"
+            }).on("click", function(){
+                        ff.stepBack();
+            });
+        } 
 
+            //Reset Button
+        var resetButton = ex.createButton(margin,
+                                          4*ex.height()/5, "reset",{
+            width: "40px",
+            height: "20px"
+            }).on("click", function(){
+                        ff.reset();
+            });
 
     ex.chromeElements.resetButton.on("click", function(){ff.reset();})
     //End of buttons
@@ -322,29 +355,22 @@ var main = function(ex) {
         dirOrder : [],
         init     : function(){
             dirOrder = model.dirOrder
+            if(ex.data.meta.mode == "assessment2"){
+
+            }
         },
         draw: function(){
+            ex.graphics.ctx.textAlign = "start"
             ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
             ex.graphics.ctx.fillStyle = "black"
-            for (var i = 0; i < dirOrder.length; i++) {
+            for (var i = dirOrder.length-1; i >=0; i--) {
                 ex.graphics.ctx.fillText("floodfill("+dirOrder[i]+")",
                                          2*ex.width()/3, 
-                                        (1+i)*ex.height()/6);
+                                        (4-i)*ex.height()/6);
             };
         }
     }
-/*
-    var code = ex.createCode(3*ex.width()/5, 20,
-        "#Code\n\n\n\n\
-        floodfill("+model.dirOrder[0]+")\n\n\n\
-        floodfill("+model.dirOrder[1]+")\n\n\n\
-        floodfill("+model.dirOrder[2]+")\n\n\n\
-        floodfill("+model.dirOrder[3]+")",
-        {size:"large",
-        height: (2*ex.height()/3).toString()+"px",
-        width: (ex.width()/3).toString()+"px"}
-        );
-*/
+
 
 
 
@@ -357,11 +383,45 @@ var main = function(ex) {
         code.draw();
     }
     code.init();
-    ff.init(2,2); 
+    ff.init(Math.floor(Math.random()*model.rows),Math.floor(Math.random()*model.cols)); 
     drawAll();
 
 
-    ex.graphics.on("mousedown", function(){ff.next()});
+    ex.graphics.on("mousedown", function(event){
+
+        var width = (ex.width()/2)/model.cols;
+        var height = (5*ex.height()/7)/model.rows;
+        var x = event.offsetX - margin;
+        var y = event.offsetY - margin;
+        var col = Math.floor(x/width);
+        var row = Math.floor(y/height);
+        if(row >= 0 && row < model.rows && col >= 0 && col < model.cols &&
+            model.board[row][col].visited != true){
+                //figure out a way to keep track of what is next
+                if(ff.nextStack.length>0){
+                    var next = ff.nextStack.pop();
+                    while(next.row < 0 || next.row >= model.rows ||
+                        next.col < 0 || next.col >= model.cols ||
+                        model.board[next.row][next.col] == null ||
+                        model.board[next.row][next.col].visited == true){
+                        next = ff.nextStack.pop();
+                    }
+                    if (next.row == row && next.col == col) {
+                        ff.nextStack.push(next);
+                        ff.next();
+                        if(checkFull()){
+                            ex.showFeedback("Done! Way to go!");
+                        }
+
+                    } else {
+                        ex.showFeedback("Incorrect! Pay close attention\
+                                        to the order of events!")
+                        ff.nextStack.push(next);
+                    }
+                }
+        }
+
+    });
 
     
 
