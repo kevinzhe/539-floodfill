@@ -3,6 +3,7 @@
         "author": "",
         "email": "",
 
+        "mode": "practice",
         "title": "Floodfill",
         "description": "Interactive floodfill",
         "id": "ks-ph",

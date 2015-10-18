@@ -1,5 +1,6 @@
 var main = function(ex) {
     window.ex = ex;
+    ex.data.meta.mode = "test1"
 
     /* Directions */
     var UP      = 'up';
@@ -63,11 +64,14 @@ var main = function(ex) {
         curRow:     0,
         curCol:     0,
         init: function(row, col) {
+            ff.nextStack = []
+            ff.prevStack = []
             ff.nextStack.push({ row: row, col: col, depth: 0 });
             ff.initialRow = row; //I added these lines too
             ff.initialCol = col;
             ff.curRow = row;
             ff.curCol = col;
+            ff.next();
         },
         next: function() {
             if (ff.nextStack.length === 0) {
@@ -85,17 +89,22 @@ var main = function(ex) {
                 //ff.curRow = row; //me again
                 //ff.curCol = col; //yep, it's late.
                 //drawAll();
+                cur.success = false;
+                ff.prevStack.push(cur)
                 return BLOCKED;
             }
             if (model.board[row][col].visited) {
                 //ff.curRow = row; //man, I'm tired
                 //ff.curCol = col; //So tired.
                 //drawAll();
+                cur.success = false;
+                ff.prevStack.push(cur)
                 return FILLED;
             }
             //I wrote this
             ff.curRow = cur.row;
             ff.curCol = cur.col;
+            cur.success = true;
             //Up to here
             var curFrame = model.board[cur.row][cur.col];
             curFrame.direction = cur.direction //I added this
@@ -147,6 +156,23 @@ var main = function(ex) {
                 playButton.text("play")
                 ff.init(ff.initialRow, ff.initialCol);
                 drawAll();
+        },
+        stepBack: function(){
+            if (ff.prevStack.length == 0){
+                return DONE;
+            }
+            var last = ff.prevStack.pop();
+            console.log(last)
+            if (last.success){
+                for (var i = 0; i < 4; i++) {
+                    ff.nextStack.pop();  
+                };
+                model.board[last.row][last.col].visited = false;
+                ff.curCol = last.col
+                ff.curRow = last.rows
+                ff.nextStack.push(last);
+            }
+            drawAll();
         }
     };
 
@@ -253,6 +279,8 @@ var main = function(ex) {
         height: "20px"
     }).on("click", function(){
         ff.next();
+        ex.stopTimer(onTimer);
+        playButton.text("play")
     });
         //Play and Pause button
     var playButton = ex.createButton(2*ex.width()/8, 4*ex.height()/5, "play",{
@@ -278,35 +306,66 @@ var main = function(ex) {
                     ff.reset();
         });
 
+
+    var stepBackButton = ex.createButton(4*ex.width()/8, 4*ex.height()/5, "back",{
+        width: "40px",
+        height: "20px"
+        }).on("click", function(){
+                    ff.stepBack();
+        });
+
+
+    ex.chromeElements.resetButton.on("click", function(){ff.reset();})
+    //End of buttons
+
+    var code = {
+        dirOrder : [],
+        init     : function(){
+            dirOrder = model.dirOrder
+        },
+        draw: function(){
+            ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
+            ex.graphics.ctx.fillStyle = "black"
+            for (var i = 0; i < dirOrder.length; i++) {
+                ex.graphics.ctx.fillText("floodfill("+dirOrder[i]+")",
+                                         2*ex.width()/3, 
+                                        (1+i)*ex.height()/6);
+            };
+        }
+    }
+/*
+    var code = ex.createCode(3*ex.width()/5, 20,
+        "#Code\n\n\n\n\
+        floodfill("+model.dirOrder[0]+")\n\n\n\
+        floodfill("+model.dirOrder[1]+")\n\n\n\
+        floodfill("+model.dirOrder[2]+")\n\n\n\
+        floodfill("+model.dirOrder[3]+")",
+        {size:"large",
+        height: (2*ex.height()/3).toString()+"px",
+        width: (ex.width()/3).toString()+"px"}
+        );
+*/
+
+
+
     var drawAll = function(){
         ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
         for (var i = 0; i < arrows.length; i++) {
             arrows[i].remove()
         };
         drawGrid();
+        code.draw();
     }
-
-    ex.chromeElements.resetButton.on("click", function(){ff.reset();})
-    //End of buttons
-
-
-    var code = ex.createCode(3*ex.width()/5, 20,
-        "#Code\n\n\n\n\
-        floodfill(UP)\n\n\n\
-        floodfill(RIGHT)\n\n\n\
-        floodfill(DOWN)\n\n\n\
-        floodfill(LEFT)",
-        {size:"large",
-        height: (2*ex.height()/3).toString()+"px",
-        width: (ex.width()/3).toString()+"px"}
-        );
-
+    code.init();
     ff.init(2,2); 
     drawAll();
 
 
+    ex.graphics.on("mousedown", function(){ff.next()});
 
-    //while(ff.next()!=DONE){};
+    
+
+
 
 };
 
