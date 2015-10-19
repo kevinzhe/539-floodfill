@@ -15,5 +15,6 @@
         "menuDisplayName": "Floodfill",
         "requires": {
         }
-    }
+    },
+    "answers": [null,null,null,null]
 }

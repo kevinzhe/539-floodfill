@@ -1,8 +1,30 @@
 var main = function(ex) {
     window.ex = ex;
-    ex.data.meta.mode = "demo"
+    //ex.data.meta.mode = "demo"
     //ex.data.meta.mode = "assessment1"
-    //ex.data.meta.mode = "assessment2"
+    ex.data.meta.mode = "assessment2"
+    var objects = []
+
+
+    function shuffle(array) {
+        var counter = array.length, temp, index;
+
+        // While there are elements in the array
+        while (counter > 0) {
+            // Pick a random index
+            index = Math.floor(Math.random() * counter);
+
+            // Decrease counter by 1
+            counter--;
+
+            // And swap the last element with it
+            temp = array[counter];
+            array[counter] = array[index];
+            array[index] = temp;
+        }
+
+        return array;
+    }
 
 
     /* Directions */
@@ -24,6 +46,288 @@ var main = function(ex) {
     var margin = 20
     /* Initialize our model fields */
     var model = {};
+    var code = {};
+
+    var initMode = function(mode){
+        for (var i = 0; i < objects.length; i++) {
+            objects[i].remove();
+        };
+
+        objects = [];
+        ex.chromeElements.submitButton.off("click");
+        ex.graphics.off("mousedown");
+        if (mode === "demo") {
+            initDemo();
+        } else if(mode === "assessment1"){
+            initAssessment1();
+        } else if(mode === "assessment2"){
+            initAssessment2();
+        };
+        //ff.init();
+        //MOVE THIS LATER. Give it its own init.
+
+    code = {
+        dirOrder : [],
+        answer   : [],
+        dropdowns: [],
+        init     : function(){
+            dirOrder = model.dirOrder
+            if(ex.data.meta.mode == "assessment2"){
+                for(var i = dirOrder.length-1; i >=0; i--){
+                    code.dropdowns.push(ex.createDropdown(2*ex.width()/3,
+                                     (4-i)*ex.height()/6, "",
+                                     {size:"Large",
+                                     elements :{
+                                     "up"   : makeSelection(i,"up"),
+                                     "down" : makeSelection(i,"down"),
+                                     "left" : makeSelection(i,"left"),
+                                     "right": makeSelection(i,"right")}}
+                                     ));
+                }
+            }
+        },
+        draw: function(){
+            ex.graphics.ctx.textAlign = "start"
+            ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
+            ex.graphics.ctx.fillStyle = "black"
+            for (var i = dirOrder.length-1; i >=0; i--) {
+                ex.graphics.ctx.fillText("floodfill("+dirOrder[i]+")",
+                                         2*ex.width()/3, 
+                                        (4-i)*ex.height()/6);
+            };
+        },
+        remove: function(){
+            for (var i = 0; i < code.dropdowns.length; i++) {
+                code.dropdowns[i].remove();
+            };
+        }
+    }
+    code.init();
+    objects.push(code);
+    }
+/*
+--------------
+INIT FUNCTIONS
+--------------
+*/
+        /*
+        --------------
+        INIT DEMO MODE
+        --------------
+        */
+    var initDemo = function(){
+        var nextButton = ex.createButton(3*ex.width()/8+margin,
+                                         4*ex.height()/5, "next",{
+            width: "40px",
+            height: "20px"
+        }).on("click", function(){
+            ff.next();
+            //ex.stopTimer(onTimer);
+            playButton.text("play")
+        });
+        objects.push(nextButton)
+            //Play and Pause button
+        var playButton = ex.createButton(2*ex.width()/8+margin,
+                                         4*ex.height()/5, "play",{
+            width: "40px",
+            height: "20px"
+        })
+        playButton.on("click", function(){
+            if (playButton.text() == "play") {
+            onTimer = ex.onTimer(200,function () { 
+                        ff.next();
+                    });
+            playButton.text("pause");
+            } else {
+                ex.stopTimer(onTimer);
+                playButton.text("play")
+            };
+        });
+
+        objects.push(playButton)
+
+        var stepBackButton = ex.createButton(ex.width()/8+margin,
+                                             4*ex.height()/5, "back",{
+            width: "40px",
+            height: "20px"
+            }).on("click", function(){
+                        ff.stepBack();
+            });
+         
+
+        objects.push(stepBackButton)
+
+            //Reset Button
+        var resetButton = ex.createButton(margin,
+                                          4*ex.height()/5, "reset",{
+            width: "40px",
+            height: "20px"
+            }).on("click", function(){
+                        ff.reset();
+            });
+
+        objects.push(resetButton)
+
+        ex.chromeElements.resetButton.on("click", function(){ff.reset();})
+    }
+
+        /*
+        --------------
+        INIT ASSESSMENT1 MODE
+        --------------
+        */
+    var initAssessment1 = function(){
+        var nextButton = ex.createButton(3*ex.width()/8+margin,
+                                         4*ex.height()/5, "next",{
+            width: "40px",
+            height: "20px"
+        }).on("click", function(){
+            ff.next();
+            //ex.stopTimer(onTimer);
+            playButton.text("play")
+        });
+        objects.push(nextButton)
+            //Play and Pause button
+        var playButton = ex.createButton(2*ex.width()/8+margin,
+                                         4*ex.height()/5, "play",{
+            width: "40px",
+            height: "20px"
+        })
+        playButton.on("click", function(){
+            if (playButton.text() == "play") {
+            onTimer = ex.onTimer(200,function () { 
+                        ff.next();
+                    });
+            playButton.text("pause");
+            } else {
+                ex.stopTimer(onTimer);
+                playButton.text("play")
+            };
+        });
+
+        objects.push(playButton)
+
+        var stepBackButton = ex.createButton(ex.width()/8+margin,
+                                             4*ex.height()/5, "back",{
+            width: "40px",
+            height: "20px"
+            }).on("click", function(){
+                        ff.stepBack();
+            });
+         
+
+        objects.push(stepBackButton)
+
+            //Reset Button
+        var resetButton = ex.createButton(margin,
+                                          4*ex.height()/5, "reset",{
+            width: "40px",
+            height: "20px"
+            }).on("click", function(){
+                        ff.reset();
+            });
+
+        objects.push(resetButton)
+
+        ex.chromeElements.resetButton.on("click", function(){ff.reset();})
+
+        ex.graphics.on("mousedown", function(event){
+
+        var width = (ex.width()/2)/model.cols;
+        var height = (5*ex.height()/7)/model.rows;
+        var x = event.offsetX - margin;
+        var y = event.offsetY - margin;
+        var col = Math.floor(x/width);
+        var row = Math.floor(y/height);
+        if(row >= 0 && row < model.rows && col >= 0 && col < model.cols &&
+            model.board[row][col].visited != true){
+                //figure out a way to keep track of what is next
+                if(ff.nextStack.length>0){
+                    var next = ff.nextStack.pop();
+                    while(next.row < 0 || next.row >= model.rows ||
+                        next.col < 0 || next.col >= model.cols ||
+                        model.board[next.row][next.col] == null ||
+                        model.board[next.row][next.col].visited == true){
+                        next = ff.nextStack.pop();
+                    }
+                    if (next.row == row && next.col == col) {
+                        ff.nextStack.push(next);
+                        ff.next();
+                        if(checkFull()){
+                            ex.showFeedback("Done! Way to go!");
+                        }
+
+                    } else {
+                        ex.showFeedback("Incorrect! Pay close attention\
+                                        to the order of events!")
+                        ff.nextStack.push(next);
+                    }
+                }
+        }
+
+    });
+    }
+
+
+        /*
+        --------------
+        INIT DEMO MODE
+        --------------
+        */
+    var initAssessment2 = function(){
+
+            //Reset Button
+        var resetButton = ex.createButton(margin,
+                                          4*ex.height()/5, "reset",{
+            width: "40px",
+            height: "20px"
+            }).on("click", function(){
+                        ff.reset();
+            });
+
+        ex.chromeElements.resetButton.on("click", function(){ff.reset();})
+
+        ex.chromeElements.submitButton.on("click", 
+            function(){
+                if (code.dirOrder === ex.data.answers) {
+                    ex.showFeedback("Correct!!!");
+                } else {
+                    ex.showFeedback("Incorrect!!! Try tracing the code as the\
+                                board fills and seeing when it changes \
+                                direction");
+                }
+            })
+    }
+
+
+/*
+--------------
+MODE BUTTONS
+--------------
+*/
+    var demoButton = ex.createButton(ex.width()/2 + 40 * 7,
+                                    margin, "Demo Mode").on("click",
+                                    function(){
+                                        ex.data.meta.mode = "demo";
+                                        initMode("demo");
+                                    });
+
+    var assess1Button = ex.createButton(ex.width()/2 + 40,
+                                    margin, "Assessment 1").on("click",
+                                    function(){
+                                        ex.data.meta.mode = "assessment1";
+                                        initMode("assessment1");
+                                    });
+
+    var assess2Button = ex.createButton(ex.width()/2 + 40 * 4,
+                                    margin, "Assessment 2").on("click",
+                                    function(){
+                                        ex.data.meta.mode = "assessment2";
+                                        initMode("assessment2");
+                                    });
+
+
+
     var initModel = function() {
         if (typeof ex.data.model !== 'undefined') {
             model = ex.data.model;
@@ -53,7 +357,7 @@ var main = function(ex) {
             return board;
         };
         model.board = initBoard(model.rows, model.cols);
-        model.dirOrder = [UP, RIGHT, DOWN, LEFT];
+        model.dirOrder = shuffle([UP, RIGHT, DOWN, LEFT]);
         ex.data.model = model;
     };
     initModel();
@@ -155,7 +459,7 @@ var main = function(ex) {
             for (var i = 0; i < arrows.length; i++) {
                 arrows[i].remove()
             };
-                if(ex.data.meta.mode=="demo"){
+                if(ex.data.meta.mode==="demo"){
                     ex.stopTimer(onTimer);
                     playButton.text("play")
                 }
@@ -298,76 +602,11 @@ var main = function(ex) {
         return true;
     }
 
-    //Buttons
-        //Playthrough buttons
-    if(ex.data.meta.mode == "demo" || ex.data.meta.mode == "assessment2"){
-            //Next step button
-        var nextButton = ex.createButton(3*ex.width()/8+margin,
-                                         4*ex.height()/5, "next",{
-            width: "40px",
-            height: "20px"
-        }).on("click", function(){
-            ff.next();
-            ex.stopTimer(onTimer);
-            playButton.text("play")
-        });
-            //Play and Pause button
-        var playButton = ex.createButton(2*ex.width()/8+margin,
-                                         4*ex.height()/5, "play",{
-            width: "40px",
-            height: "20px"
-        })
-        playButton.on("click", function(){
-            if (playButton.text() == "play") {
-            onTimer = ex.onTimer(200,function () { 
-                        ff.next();
-                    });
-            playButton.text("pause");
-            } else {
-                ex.stopTimer(onTimer);
-                playButton.text("play")
-            };
-        });
-
-
-        var stepBackButton = ex.createButton(ex.width()/8+margin,
-                                             4*ex.height()/5, "back",{
-            width: "40px",
-            height: "20px"
-            }).on("click", function(){
-                        ff.stepBack();
-            });
-        } 
-
-            //Reset Button
-        var resetButton = ex.createButton(margin,
-                                          4*ex.height()/5, "reset",{
-            width: "40px",
-            height: "20px"
-            }).on("click", function(){
-                        ff.reset();
-            });
-
-    ex.chromeElements.resetButton.on("click", function(){ff.reset();})
     //End of buttons
 
-    var code = {
-        dirOrder : [],
-        init     : function(){
-            dirOrder = model.dirOrder
-            if(ex.data.meta.mode == "assessment2"){
-
-            }
-        },
-        draw: function(){
-            ex.graphics.ctx.textAlign = "start"
-            ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
-            ex.graphics.ctx.fillStyle = "black"
-            for (var i = dirOrder.length-1; i >=0; i--) {
-                ex.graphics.ctx.fillText("floodfill("+dirOrder[i]+")",
-                                         2*ex.width()/3, 
-                                        (4-i)*ex.height()/6);
-            };
+    var makeSelection = function(i, answer){
+        return function(){
+            ex.data.answers[i] = answer;
         }
     }
 
@@ -382,47 +621,19 @@ var main = function(ex) {
         drawGrid();
         code.draw();
     }
+
+
+    
+
+
+    
+
+
+    initMode(ex.data.meta.mode);
     code.init();
+
     ff.init(Math.floor(Math.random()*model.rows),Math.floor(Math.random()*model.cols)); 
     drawAll();
-
-
-    ex.graphics.on("mousedown", function(event){
-
-        var width = (ex.width()/2)/model.cols;
-        var height = (5*ex.height()/7)/model.rows;
-        var x = event.offsetX - margin;
-        var y = event.offsetY - margin;
-        var col = Math.floor(x/width);
-        var row = Math.floor(y/height);
-        if(row >= 0 && row < model.rows && col >= 0 && col < model.cols &&
-            model.board[row][col].visited != true){
-                //figure out a way to keep track of what is next
-                if(ff.nextStack.length>0){
-                    var next = ff.nextStack.pop();
-                    while(next.row < 0 || next.row >= model.rows ||
-                        next.col < 0 || next.col >= model.cols ||
-                        model.board[next.row][next.col] == null ||
-                        model.board[next.row][next.col].visited == true){
-                        next = ff.nextStack.pop();
-                    }
-                    if (next.row == row && next.col == col) {
-                        ff.nextStack.push(next);
-                        ff.next();
-                        if(checkFull()){
-                            ex.showFeedback("Done! Way to go!");
-                        }
-
-                    } else {
-                        ex.showFeedback("Incorrect! Pay close attention\
-                                        to the order of events!")
-                        ff.nextStack.push(next);
-                    }
-                }
-        }
-
-    });
-
     
 
 
