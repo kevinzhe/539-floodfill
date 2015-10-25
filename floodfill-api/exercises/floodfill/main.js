@@ -504,10 +504,21 @@ MODE BUTTONS
                 return DONE;
             }
             var last = ff.prevStack.pop();
-            if (model.board[last.row][last.col] !== null) {
-                model.board[last.row][last.col].visitedDirs = [];
-            }
             console.log(last);
+            switch (last.direction) {
+                case UP:
+                    model.board[last.row+1][last.col].visitedDirs.pop();
+                    break;
+                case DOWN:
+                    model.board[last.row-1][last.col].visitedDirs.pop();
+                    break;
+                case RIGHT:
+                    model.board[last.row][last.col-1].visitedDirs.pop();
+                    break;
+                case LEFT:
+                    model.board[last.row][last.col+1].visitedDirs.pop();
+                    break;
+            }
             if (last.success){
                 for (var i = 0; i < 4; i++) {
                     ff.nextStack.pop();  
