@@ -1,12 +1,16 @@
 var main = function(ex) {
     window.ex = ex;
-    //ex.data.meta.mode = "demo"
-    //ex.data.meta.mode = "assessment1"
-    //ex.data.meta.mode = "assessment2"
-    ex.data.meta.mode = "selfTest"
+    ex.data.meta.mode = "practice";
+    ex.data.meta.mode = "quiz-immediate";
+    ex.data.meta.mode = "quiz-delay";
+    ex.data.meta.assessmentMode = "demo"
+    //ex.data.meta.assessmentMode = "assessment1"
+    //ex.data.meta.assessmentMode = "assessment2"
+    //ex.data.meta.assessmentMode = "selfTest"
     var objects = []
     var onTimer = ex.onTimer(200,function(){});
     ex.stopTimer(onTimer);
+    var instructions = ex.createHeader(20, 9*ex.height()/10,"");
 
     function shuffle(array) {
         var counter = array.length, temp, index;
@@ -54,7 +58,7 @@ var main = function(ex) {
             dropdowns: [],
             init: function(){
                 dirOrder = model.dirOrder
-                if(ex.data.meta.mode == "assessment2"){
+                if(ex.data.meta.assessmentMode == "assessment2"){
                     for(var i = dirOrder.length-1; i >=0; i--){
                         code.dropdowns.push(ex.createDropdown(2*ex.width()/3,
                                          (4-i)*ex.height()/6, "",
@@ -168,6 +172,7 @@ var main = function(ex) {
             --------------
             */
         var initDemo = function(){
+            instructions.text("Watch how floodfill works!")
             initPlayButtons();
 
                 //Reset Button
@@ -190,7 +195,7 @@ var main = function(ex) {
         --------------
         */
     var initAssessment1 = function(){
-        
+        instructions.text("Click on the box that should be filled in next!");
             //Reset Button
         var resetButton = ex.createButton(margin,
                                           4*ex.height()/5, "reset",{
@@ -213,8 +218,7 @@ var main = function(ex) {
         var y = event.offsetY - margin;
         var col = Math.floor(x/width);
         var row = Math.floor(y/height);
-        if(row >= 0 && row < model.rows && col >= 0 && col < model.cols &&
-            model.board[row][col].visited != true){
+        if(row >= 0 && row < model.rows && col >= 0 && col < model.cols){
                 //figure out a way to keep track of what is next
                 if(ff.nextStack.length>0){
                     var next = ff.nextStack.pop();
@@ -227,14 +231,22 @@ var main = function(ex) {
                     if (next.row == row && next.col == col) {
                         ff.nextStack.push(next);
                         ff.autoNext();
-                        if(checkFull()){
+                        if(ff.nextStack.length === 0){
                             ex.showFeedback("Done! Way to go!");
                         }
 
                     } else {
-                        ex.showFeedback("Incorrect! Pay close attention\
-                                        to the order of events!")
-                        ff.nextStack.push(next);
+                        if (model.board[row][col] === null) {
+                            ex.showFeedback("Incorrect! Blacked out squares are counted as filled in by floodfill,\
+                                                so they won't be filled in again.");
+                            ff.nextStack.push(next);
+                        } else if (model.board[row][col].visited) {
+                            ex.showFeedback("Incorrect! That square has already been visited!!");
+                            ff.nextStack.push(next);
+                        } else{
+                            ex.showFeedback("Incorrect! Try to keep track of the order of events!");
+                            ff.nextStack.push(next);
+                        }
                     }
                 }
         }
@@ -249,6 +261,8 @@ var main = function(ex) {
         --------------
         */
     var initAssessment2 = function(){
+
+        instructions.text("Watch the floodfill and fill in the right directions!");
         initPlayButtons();
             //Reset Button
         var resetButton = ex.createButton(margin,
@@ -313,21 +327,21 @@ MODE BUTTONS
     var demoButton = ex.createButton(ex.width()/2 + 40 * 7,
                                     margin, "Demo Mode").on("click",
                                     function(){
-                                        ex.data.meta.mode = "demo";
+                                        ex.data.meta.assessmentMode = "demo";
                                         initMode("demo");
                                     });
 
     var assess1Button = ex.createButton(ex.width()/2 + 40,
                                     margin, "Assessment 1").on("click",
                                     function(){
-                                        ex.data.meta.mode = "assessment1";
+                                        ex.data.meta.assessmentMode = "assessment1";
                                         initMode("assessment1");
                                     });
 
     var assess2Button = ex.createButton(ex.width()/2 + 40 * 4,
                                     margin, "Assessment 2").on("click",
                                     function(){
-                                        ex.data.meta.mode = "assessment2";
+                                        ex.data.meta.assessmentMode = "assessment2";
                                         initMode("assessment2");
                                     });
 
@@ -736,7 +750,7 @@ MODE BUTTONS
     
 
     code.init();
-    initMode(ex.data.meta.mode);
+    initMode(ex.data.meta.assessmentMode);
     drawAll();
     
 
