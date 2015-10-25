@@ -123,7 +123,7 @@ var main = function(ex) {
                 width: "40px",
                 height: "20px"
             }).on("click", function(){
-                ff.next();
+                ff.autoNext();
                 ex.stopTimer(onTimer);
                 playButton.text("play")
             });
@@ -137,7 +137,7 @@ var main = function(ex) {
             playButton.on("click", function(){
                 if (playButton.text() == "play") {
                 onTimer = ex.onTimer(200,function () { 
-                            ff.next();
+                            ff.autoNext();
                         });
                 playButton.text("pause");
                 } else {
@@ -155,6 +155,7 @@ var main = function(ex) {
                 }).on("click", function(){
                             ex.stopTimer(onTimer);
                             ff.stepBack();
+                            drawAll();
                 });
              
 
@@ -225,7 +226,7 @@ var main = function(ex) {
                     }
                     if (next.row == row && next.col == col) {
                         ff.nextStack.push(next);
-                        ff.next();
+                        ff.autoNext();
                         if(checkFull()){
                             ex.showFeedback("Done! Way to go!");
                         }
@@ -286,7 +287,7 @@ var main = function(ex) {
     var initSelfTest = function(){
         var questions = ["pickLast", "fillIn"]
         for (var i = 0; i < Math.floor(Math.random()*10)+15; i++) {
-            ff.next();
+            ff.autoNext();
         };
         var question = questions[Math.floor(Math.random()*2)]
         if(question === "fillIn"){
@@ -377,7 +378,6 @@ MODE BUTTONS
         curRow:     0,
         curCol:     0,
         init: function(row, col) {
-<<<<<<< HEAD
             while(model.board[row][col] === null){
                 row = (Math.floor(Math.random()*model.rows))
                 col = (Math.floor(Math.random()*model.cols))
@@ -385,23 +385,20 @@ MODE BUTTONS
             ff.nextStack = []
             ff.prevStack = []
             ff.nextStack.push({ row: row, col: col, depth: 0 });
-=======
-            ff.nextStack = [];
-            ff.prevStack = [];
-            ff.nextStack.push({
-                row: row,
-                col: col,
-                depth: 0,
-                code: model.dirOrder,
-            });
->>>>>>> stack-trace
             ff.initialRow = row; //I added these lines too
             ff.initialCol = col;
             ff.curRow = row;
             ff.curCol = col;
             ff.callStack = [];
             ff.prevCallStack = [];
-            ff.next();
+            for (var i = 0; i < model.rows; i++) {
+                for (var j = 0; j < model.cols; j++) {
+                    if (model.board[i][j] !== null) {
+                        model.board[i][j].visitedDirs = [];
+                    }
+                }
+            }
+            ff.autoNext();
         },
         next: function() {
             if (ff.nextStack.length === 0) {
@@ -433,6 +430,8 @@ MODE BUTTONS
                 from.visitedDirs.push(dir);
             }
             if (row < 0 || row >= model.cols || col < 0 || col >= model.cols) {
+                cur.success = false;
+                ff.prevStack.push(cur);
                 return OFF_BOARD;
             }
             if (model.board[row][col] === null) {
@@ -498,23 +497,17 @@ MODE BUTTONS
                     };
                 }
             };
-<<<<<<< HEAD
-            for (var i = 0; i < arrows.length; i++) {
-                arrows[i].remove()
-            };
-=======
-                if(ex.data.meta.mode=="demo"){
-                    ex.stopTimer(onTimer);
-                    playButton.text("play")
-                }
->>>>>>> stack-trace
-                ff.init(ff.initialRow, ff.initialCol);
+            ff.init(ff.initialRow, ff.initialCol);
         },
         stepBack: function(){
             if (ff.prevStack.length === 0){
                 return DONE;
             }
             var last = ff.prevStack.pop();
+            if (model.board[last.row][last.col] !== null) {
+                model.board[last.row][last.col].visitedDirs = [];
+            }
+            console.log(last);
             if (last.success){
                 for (var i = 0; i < 4; i++) {
                     ff.nextStack.pop();  
@@ -524,6 +517,10 @@ MODE BUTTONS
                 ff.curRow = last.rows;
                 ff.nextStack.push(last);
             }
+        },
+        autoNext: function() {
+            ff.next();
+            drawAll();
         }
     };
 
@@ -710,64 +707,6 @@ MODE BUTTONS
         return true;
     }
 
-<<<<<<< HEAD
-=======
-    //Buttons
-        //Playthrough buttons
-    if(ex.data.meta.mode == "demo" || ex.data.meta.mode == "assessment2"){
-            //Next step button
-        var nextButton = ex.createButton(3*ex.width()/8+margin,
-                                         4*ex.height()/5, "next",{
-            width: "40px",
-            height: "20px"
-        }).on("click", function(){
-            ff.next();
-            drawAll();
-            ex.stopTimer(onTimer);
-            playButton.text("play");
-        });
-            //Play and Pause button
-        var playButton = ex.createButton(2*ex.width()/8+margin,
-                                         4*ex.height()/5, "play",{
-            width: "40px",
-            height: "20px"
-        })
-        playButton.on("click", function(){
-            if (playButton.text() == "play") {
-            onTimer = ex.onTimer(500,function () { 
-                        ff.next();
-                        drawAll();
-                    });
-            playButton.text("pause");
-            } else {
-                ex.stopTimer(onTimer);
-                playButton.text("play")
-            };
-        });
-
-
-        var stepBackButton = ex.createButton(ex.width()/8+margin,
-                                             4*ex.height()/5, "back",{
-            width: "40px",
-            height: "20px"
-            }).on("click", function(){
-                        ff.stepBack();
-                        drawAll();
-            });
-        } 
-
-            //Reset Button
-        var resetButton = ex.createButton(margin,
-                                          4*ex.height()/5, "reset",{
-            width: "40px",
-            height: "20px"
-            }).on("click", function(){
-                        ff.reset();
-                        drawAll();
-            });
-
-    ex.chromeElements.resetButton.on("click", function(){ff.reset();})
->>>>>>> stack-trace
     //End of buttons
 
     var makeSelection = function(i, answer){
@@ -780,30 +719,8 @@ MODE BUTTONS
         ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
         drawGrid();
         code.draw();
-<<<<<<< HEAD
-    }
-=======
     };
-    code.init();
-    ff.init(Math.floor(Math.random()*model.rows),Math.floor(Math.random()*model.cols)); 
-    drawAll();
 
->>>>>>> stack-trace
-
-
-    
-
-<<<<<<< HEAD
-=======
-                    } else {
-                        ex.showFeedback("Incorrect! Pay close attention\
-                                        to the order of events!")
-                        ff.nextStack.push(next);
-                    }
-                }
-        }
-        drawAll();
->>>>>>> stack-trace
 
     
 
