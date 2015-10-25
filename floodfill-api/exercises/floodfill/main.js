@@ -2,9 +2,11 @@ var main = function(ex) {
     window.ex = ex;
     //ex.data.meta.mode = "demo"
     //ex.data.meta.mode = "assessment1"
-    ex.data.meta.mode = "assessment2"
+    //ex.data.meta.mode = "assessment2"
+    ex.data.meta.mode = "selfTest"
     var objects = []
-
+    var onTimer = ex.onTimer(200,function(){});
+    ex.stopTimer(onTimer);
 
     function shuffle(array) {
         var counter = array.length, temp, index;
@@ -48,125 +50,137 @@ var main = function(ex) {
     var model = {};
     var code = {};
 
+    var code = {
+            dirOrder : [],
+            answer   : [],
+            dropdowns: [],
+            init: function(){
+                dirOrder = model.dirOrder
+                if(ex.data.meta.mode == "assessment2"){
+                    for(var i = dirOrder.length-1; i >=0; i--){
+                        code.dropdowns.push(ex.createDropdown(2*ex.width()/3,
+                                         (4-i)*ex.height()/6, "",
+                                         {size:"Large",
+                                         elements :{
+                                         "up"   : makeSelection(i,"up"),
+                                         "down" : makeSelection(i,"down"),
+                                         "left" : makeSelection(i,"left"),
+                                         "right": makeSelection(i,"right")}}
+                                         ));
+                    }
+                }
+            },
+            draw: function(){
+                ex.graphics.ctx.textAlign = "start"
+                ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
+                ex.graphics.ctx.fillStyle = "black"
+                for (var i = dirOrder.length-1; i >= 0; i--) {
+                    ex.graphics.ctx.fillText("floodfill("+dirOrder[i]+")",
+                                             2*ex.width()/3, 
+                                            (4-i)*ex.height()/6);
+                };
+            },
+            remove: function(){
+                for (var i = 0; i < code.dropdowns.length; i++) {
+                    code.dropdowns[i].remove();
+                };
+            }
+        }
+
     var initMode = function(mode){
+        ex.stopTimer(onTimer);
+
+        ff.init(Math.floor(Math.random()*model.rows),Math.floor(Math.random()*model.cols));
+        ff.reset();
         for (var i = 0; i < objects.length; i++) {
             objects[i].remove();
-        };
-
-        objects = [];
-        ex.chromeElements.submitButton.off("click");
-        ex.graphics.off("mousedown");
-        if (mode === "demo") {
-            initDemo();
-        } else if(mode === "assessment1"){
-            initAssessment1();
-        } else if(mode === "assessment2"){
-            initAssessment2();
-        };
-        //ff.init();
-        //MOVE THIS LATER. Give it its own init.
-
-    code = {
-        dirOrder : [],
-        answer   : [],
-        dropdowns: [],
-        init     : function(){
-            dirOrder = model.dirOrder
-            if(ex.data.meta.mode == "assessment2"){
-                for(var i = dirOrder.length-1; i >=0; i--){
-                    code.dropdowns.push(ex.createDropdown(2*ex.width()/3,
-                                     (4-i)*ex.height()/6, "",
-                                     {size:"Large",
-                                     elements :{
-                                     "up"   : makeSelection(i,"up"),
-                                     "down" : makeSelection(i,"down"),
-                                     "left" : makeSelection(i,"left"),
-                                     "right": makeSelection(i,"right")}}
-                                     ));
-                }
-            }
-        },
-        draw: function(){
-            ex.graphics.ctx.textAlign = "start"
-            ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
-            ex.graphics.ctx.fillStyle = "black"
-            for (var i = dirOrder.length-1; i >=0; i--) {
-                ex.graphics.ctx.fillText("floodfill("+dirOrder[i]+")",
-                                         2*ex.width()/3, 
-                                        (4-i)*ex.height()/6);
             };
-        },
-        remove: function(){
-            for (var i = 0; i < code.dropdowns.length; i++) {
-                code.dropdowns[i].remove();
+
+            objects = [];
+            ex.chromeElements.submitButton.off("click");
+            ex.graphics.off("mousedown");
+            if (mode === "demo") {
+                initDemo();
+            } else if(mode === "assessment1"){
+                initAssessment1();
+            } else if(mode === "assessment2"){
+                initAssessment2();
+            } else if(mode === "selfTest"){
+                initSelfTest();
             };
+
+        
+        code.init();
+        objects.push(code);
         }
-    }
-    code.init();
-    objects.push(code);
-    }
-/*
---------------
-INIT FUNCTIONS
---------------
-*/
-        /*
-        --------------
-        INIT DEMO MODE
-        --------------
-        */
-    var initDemo = function(){
-        var nextButton = ex.createButton(3*ex.width()/8+margin,
-                                         4*ex.height()/5, "next",{
-            width: "40px",
-            height: "20px"
-        }).on("click", function(){
-            ff.next();
-            //ex.stopTimer(onTimer);
-            playButton.text("play")
-        });
-        objects.push(nextButton)
-            //Play and Pause button
-        var playButton = ex.createButton(2*ex.width()/8+margin,
-                                         4*ex.height()/5, "play",{
-            width: "40px",
-            height: "20px"
-        })
-        playButton.on("click", function(){
-            if (playButton.text() == "play") {
-            onTimer = ex.onTimer(200,function () { 
-                        ff.next();
-                    });
-            playButton.text("pause");
-            } else {
+    /*
+    --------------
+    INIT FUNCTIONS
+    --------------
+    */
+
+        var initPlayButtons = function(){
+            var nextButton = ex.createButton(3*ex.width()/8+margin,
+                                             4*ex.height()/5, "next",{
+                width: "40px",
+                height: "20px"
+            }).on("click", function(){
+                ff.next();
                 ex.stopTimer(onTimer);
                 playButton.text("play")
-            };
-        });
-
-        objects.push(playButton)
-
-        var stepBackButton = ex.createButton(ex.width()/8+margin,
-                                             4*ex.height()/5, "back",{
-            width: "40px",
-            height: "20px"
-            }).on("click", function(){
-                        ff.stepBack();
             });
-         
-
-        objects.push(stepBackButton)
-
-            //Reset Button
-        var resetButton = ex.createButton(margin,
-                                          4*ex.height()/5, "reset",{
-            width: "40px",
-            height: "20px"
-            }).on("click", function(){
-                        ff.reset();
+            objects.push(nextButton)
+                //Play and Pause button
+            var playButton = ex.createButton(2*ex.width()/8+margin,
+                                             4*ex.height()/5, "play",{
+                width: "40px",
+                height: "20px"
+            })
+            playButton.on("click", function(){
+                if (playButton.text() == "play") {
+                onTimer = ex.onTimer(200,function () { 
+                            ff.next();
+                        });
+                playButton.text("pause");
+                } else {
+                    ex.stopTimer(onTimer);
+                    playButton.text("play")
+                };
             });
 
-        objects.push(resetButton)
+            objects.push(playButton)
+
+            var stepBackButton = ex.createButton(ex.width()/8+margin,
+                                                 4*ex.height()/5, "back",{
+                width: "40px",
+                height: "20px"
+                }).on("click", function(){
+                            ex.stopTimer(onTimer);
+                            ff.stepBack();
+                });
+             
+
+            objects.push(stepBackButton)
+        }
+
+            /*
+            --------------
+            INIT DEMO MODE
+            --------------
+            */
+        var initDemo = function(){
+            initPlayButtons();
+
+                //Reset Button
+            var resetButton = ex.createButton(margin,
+                                              4*ex.height()/5, "reset",{
+                width: "40px",
+                height: "20px"
+                }).on("click", function(){
+                            ff.reset();
+                });
+
+            objects.push(resetButton)
 
         ex.chromeElements.resetButton.on("click", function(){ff.reset();})
     }
@@ -177,53 +191,14 @@ INIT FUNCTIONS
         --------------
         */
     var initAssessment1 = function(){
-        var nextButton = ex.createButton(3*ex.width()/8+margin,
-                                         4*ex.height()/5, "next",{
-            width: "40px",
-            height: "20px"
-        }).on("click", function(){
-            ff.next();
-            //ex.stopTimer(onTimer);
-            playButton.text("play")
-        });
-        objects.push(nextButton)
-            //Play and Pause button
-        var playButton = ex.createButton(2*ex.width()/8+margin,
-                                         4*ex.height()/5, "play",{
-            width: "40px",
-            height: "20px"
-        })
-        playButton.on("click", function(){
-            if (playButton.text() == "play") {
-            onTimer = ex.onTimer(200,function () { 
-                        ff.next();
-                    });
-            playButton.text("pause");
-            } else {
-                ex.stopTimer(onTimer);
-                playButton.text("play")
-            };
-        });
-
-        objects.push(playButton)
-
-        var stepBackButton = ex.createButton(ex.width()/8+margin,
-                                             4*ex.height()/5, "back",{
-            width: "40px",
-            height: "20px"
-            }).on("click", function(){
-                        ff.stepBack();
-            });
-         
-
-        objects.push(stepBackButton)
-
+        
             //Reset Button
         var resetButton = ex.createButton(margin,
                                           4*ex.height()/5, "reset",{
             width: "40px",
             height: "20px"
             }).on("click", function(){
+                        ex.stopTimer(onTimer);
                         ff.reset();
             });
 
@@ -271,17 +246,18 @@ INIT FUNCTIONS
 
         /*
         --------------
-        INIT DEMO MODE
+        INIT assessment 2 MODE
         --------------
         */
     var initAssessment2 = function(){
-
+        initPlayButtons();
             //Reset Button
         var resetButton = ex.createButton(margin,
                                           4*ex.height()/5, "reset",{
             width: "40px",
             height: "20px"
             }).on("click", function(){
+                        ex.stopTimer(onTimer);
                         ff.reset();
             });
 
@@ -289,14 +265,44 @@ INIT FUNCTIONS
 
         ex.chromeElements.submitButton.on("click", 
             function(){
-                if (code.dirOrder === ex.data.answers) {
+                var correct = true;
+                ex.stopTimer(onTimer);
+                for (var i = 0; i < model.dirOrder.length; i++) {
+                    if(model.dirOrder[i] !== ex.data.answers[i]){
+                        correct = false;
+                    }
+
+                }
+                if(correct){
                     ex.showFeedback("Correct!!!");
                 } else {
                     ex.showFeedback("Incorrect!!! Try tracing the code as the\
                                 board fills and seeing when it changes \
                                 direction");
-                }
+                };
+
             })
+    }
+
+
+    var initSelfTest = function(){
+        var questions = ["pickLast", "fillIn"]
+        for (var i = 0; i < Math.floor(Math.random()*10)+15; i++) {
+            ff.next();
+        };
+        var question = questions[Math.floor(Math.random()*2)]
+        if(question === "fillIn"){
+            while(model.board[ff.curRow][ff.curCol] === null || model.board[ff.curRow][ff.curCol].visited){
+                ff.curRow = Math.floor(Math.random()*model.rows);
+                ff.curCol = Math.floor(Math.random()*model.cols);
+            }
+        } else if(question === "pickLast"){
+            ex.graphics.on("mousedown", function(){
+
+            })
+        }
+        drawAll();
+
     }
 
 
@@ -371,6 +377,10 @@ MODE BUTTONS
         curRow:     0,
         curCol:     0,
         init: function(row, col) {
+            while(model.board[row][col] === null){
+                row = (Math.floor(Math.random()*model.rows))
+                col = (Math.floor(Math.random()*model.cols))
+            }
             ff.nextStack = []
             ff.prevStack = []
             ff.nextStack.push({ row: row, col: col, depth: 0 });
@@ -459,15 +469,11 @@ MODE BUTTONS
             for (var i = 0; i < arrows.length; i++) {
                 arrows[i].remove()
             };
-                if(ex.data.meta.mode==="demo"){
-                    ex.stopTimer(onTimer);
-                    playButton.text("play")
-                }
                 ff.init(ff.initialRow, ff.initialCol);
                 drawAll();
         },
         stepBack: function(){
-            if (ff.prevStack.length == 0){
+            if (ff.prevStack.length === 0){
                 return DONE;
             }
             var last = ff.prevStack.pop();
@@ -628,11 +634,8 @@ MODE BUTTONS
 
     
 
-
-    initMode(ex.data.meta.mode);
     code.init();
-
-    ff.init(Math.floor(Math.random()*model.rows),Math.floor(Math.random()*model.cols)); 
+    initMode(ex.data.meta.mode);
     drawAll();
     
 
