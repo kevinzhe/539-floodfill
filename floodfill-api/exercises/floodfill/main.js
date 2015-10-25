@@ -655,7 +655,7 @@ MODE BUTTONS
                         // ex.graphics.ctx.moveTo(x0, y0);
                         // ex.graphics.ctx.lineTo(x1, y1);
                         // ex.graphics.ctx.stroke();
-                        drawArrow(ex.graphics.ctx, x0, y0, x1, y1, 'black');
+                        drawArrow(ex.graphics.ctx, x0, y0, x1, y1, '#999999');
                     }
                 }
             }
