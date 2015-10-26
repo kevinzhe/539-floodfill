@@ -1,13 +1,14 @@
 var main = function(ex) {
     window.ex = ex;
-    ex.data.meta.mode = "practice";
-    ex.data.meta.mode = "quiz-immediate";
-    ex.data.meta.mode = "quiz-delay";
-    ex.data.meta.assessmentMode = "demo"
+    //ex.data.meta.mymode = "practice";
+    //ex.data.meta.mode = "quiz-immediate";
+    ex.data.meta.mymode = "quiz-delay";
+    ex.data.meta.assessmentMode = "demo";
     //ex.data.meta.assessmentMode = "assessment1"
     //ex.data.meta.assessmentMode = "assessment2"
     //ex.data.meta.assessmentMode = "selfTest"
-    var objects = []
+    var objects = [];
+    var redo = [];
     var onTimer = ex.onTimer(200,function(){});
     ex.stopTimer(onTimer);
     var instructions = ex.createHeader(20, 9*ex.height()/10,"");
@@ -158,6 +159,7 @@ var main = function(ex) {
                 height: "20px"
                 }).on("click", function(){
                             ex.stopTimer(onTimer);
+                            playButton.text("play");
                             ff.stepBack();
                             drawAll();
                 });
@@ -210,8 +212,25 @@ var main = function(ex) {
 
         ex.chromeElements.resetButton.on("click", function(){ff.reset();})
 
-        ex.graphics.on("mousedown", function(event){
+        ex.chromeElements.undoButton.on("click", function(){
+            if(ff.prevStack.length > 1){
+                ff.stepBack();
+                redo.push(ff.nextStack.pop());
+                drawAll();
+            }
+        });
+        ex.chromeElements.redoButton.on("click", function(){
 
+            if(redo.length !== 0){
+                var next = redo.pop();
+                ff.nextStack.push(next);
+                ff.autoNext();
+            }
+        });
+
+
+        ex.graphics.on("mousedown", function(event){
+            redo = [];
         var width = (ex.width()/2)/model.cols;
         var height = (5*ex.height()/7)/model.rows;
         var x = event.offsetX - margin;
@@ -232,21 +251,51 @@ var main = function(ex) {
                         ff.nextStack.push(next);
                         ff.autoNext();
                         if(ff.nextStack.length === 0){
-                            ex.showFeedback("Done! Way to go!");
+                            if(ex.data.meta.mymode !== "quiz-delay"){
+                                ex.showFeedback("Done! Way to go!");
+                            };
                         }
 
                     } else {
-                        if (model.board[row][col] === null) {
-                            ex.showFeedback("Incorrect! Blacked out squares are counted as filled in by floodfill,\
-                                                so they won't be filled in again.");
-                            ff.nextStack.push(next);
-                        } else if (model.board[row][col].visited) {
-                            ex.showFeedback("Incorrect! That square has already been visited!!");
-                            ff.nextStack.push(next);
-                        } else{
-                            ex.showFeedback("Incorrect! Try to keep track of the order of events!");
-                            ff.nextStack.push(next);
-                        }
+                        if(ex.data.meta.mymode !== "quiz-delay"){
+                            if (model.board[row][col] === null) {
+                                ex.showFeedback("Incorrect! Blacked out squares are counted as filled in by floodfill,\
+                                                    so they won't be filled in again.");
+                                ff.nextStack.push(next);
+                            } else if (model.board[row][col].visited) {
+                                ex.showFeedback("Incorrect! That square has already been visited!!");
+                                ff.nextStack.push(next);
+                            } else{
+                                ex.showFeedback("Incorrect! Try to keep track of the order of events!");
+                                ff.nextStack.push(next);
+                            }
+                        } else {
+                            if(model.board[row][col] !== null && model.board[row][col].visited === false){
+                                    var cell = {};
+                                    cell.row = row;
+                                    cell.col = col;
+                                    cell.success = true;
+                                    if(next.row - row != 0){
+                                        if (next.row - row === 1) {
+                                            next.dir = UP;
+                                        } else if(next.row - row === -1){
+                                            next.dir = DOWN
+                                        }
+                                    } else{
+                                        if (next.col - col === 1) {
+                                            next.dir = LEFT;
+                                        } else if(next.col - col === -1){
+                                            next.dir = RIGHT
+                                        };
+                                    }
+                                    cell.depth = next.depth;
+                                    ff.nextStack.push(next);
+                                    ff.nextStack.push(cell);
+                                    ff.autoNext();
+                            } else {
+                                ff.nextStack.push(next);
+                            }
+                        };
                     }
                 }
         }
@@ -286,13 +335,15 @@ var main = function(ex) {
                     }
 
                 }
-                if(correct){
-                    ex.showFeedback("Correct!!!");
-                } else {
-                    ex.showFeedback("Incorrect!!! Try tracing the code as the\
-                                board fills and seeing when it changes \
-                                direction");
-                };
+                if(ex.data.meta.mymode === "quiz-delay"){
+                    if(correct){
+                        ex.showFeedback("Correct!!!");
+                    } else {
+                        ex.showFeedback("Incorrect!!! Try tracing the code as the\
+                                    board fills and seeing when it changes \
+                                    direction");
+                    };
+                }
 
             })
     }
@@ -518,7 +569,6 @@ MODE BUTTONS
                 return DONE;
             }
             var last = ff.prevStack.pop();
-            console.log(last);
             switch (last.direction) {
                 case UP:
                     model.board[last.row+1][last.col].visitedDirs.pop();
@@ -556,17 +606,19 @@ MODE BUTTONS
     };
 
     var drawArrow = function(context, fromx, fromy, tox, toy, color) {
-        var headlen = 10;   // length of head in pixels
-        var angle = Math.atan2(toy-fromy,tox-fromx);
-        context.beginPath();
-        context.strokeStyle = color;
-        context.lineWidth = 1;
-        context.moveTo(fromx, fromy);
-        context.lineTo(tox, toy);
-        context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-        context.moveTo(tox, toy);
-        context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
-        context.stroke();
+        if (ex.data.meta.assessmentMode !== "assessment1") {
+            var headlen = 10;   // length of head in pixels
+            var angle = Math.atan2(toy-fromy,tox-fromx);
+            context.beginPath();
+            context.strokeStyle = color;
+            context.lineWidth = 1;
+            context.moveTo(fromx, fromy);
+            context.lineTo(tox, toy);
+            context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+            context.moveTo(tox, toy);
+            context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+            context.stroke();
+        }
     };
 
     //Draw the grid
