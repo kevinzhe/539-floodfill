@@ -56,6 +56,8 @@ var main = function(ex) {
             dirOrder : [],
             answer   : [],
             dropdowns: [],
+            depth    : 0,
+            curStep  : 0,
             init: function(){
                 dirOrder = model.dirOrder
                 if(ex.data.meta.assessmentMode == "assessment2"){
@@ -73,21 +75,45 @@ var main = function(ex) {
                 }
             },
             draw: function(){
-                ex.graphics.ctx.textAlign = "start"
-                ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
-                ex.graphics.ctx.fillStyle = "black"
-                for (var i = dirOrder.length-1; i >= 0; i--) {
-                    ex.graphics.ctx.fillText("floodfill("+dirOrder[i]+")",
-                                             2*ex.width()/3, 
-                                            (4-i)*ex.height()/6);
-                };
+                var x0 = 6*ex.width()/10;
+                var y0 = 2*ex.height()/10;
+                var w = 3.7*ex.width()/10;
+                var h = 6*ex.height()/10;
+                var offset = 5;
+                for (var i = code.depth; i >= 0; i--) {
+                    var d = i;
+                    var x = x0-d*offset;
+                    var y = y0-d*offset;
+                    ex.graphics.ctx.beginPath();
+                    ex.graphics.ctx.strokeStyle = 'black';
+                    ex.graphics.ctx.lineWidth = 2;
+                    ex.graphics.ctx.fillStyle = 'white'; 
+                    ex.graphics.ctx.rect(x, y, w, h);
+                    ex.graphics.ctx.stroke();
+                    ex.graphics.ctx.fillRect(x, y, w, h);
+                    ex.graphics.ctx.textAlign = "start";
+                    ex.graphics.ctx.fillStyle = 'black'; 
+                    var margin = h/5;
+                    for (var j = dirOrder.length-1; j >= 0; j--) {
+                        var t = 'floodfill('+dirOrder[j]+')';
+                        var size = ex.width()/35;
+                        var font = size.toString()+"px Courier";
+                        var yc = y+(4-j)*margin;
+                        if (3-j === code.curStep) {
+                            drawArrow(ex.graphics.ctx,x+15,yc-size/3,x+40,yc-size/3,'black',1);
+                        }
+                        ex.graphics.ctx.font = font;
+                        ex.graphics.ctx.fillText(t, x+50, yc);
+                    };
+                }
             },
             remove: function(){
                 for (var i = 0; i < code.dropdowns.length; i++) {
                     code.dropdowns[i].remove();
                 };
             }
-        }
+        };
+    window.code = code;
 
     var initMode = function(mode){
         ex.stopTimer(onTimer);
@@ -412,6 +438,7 @@ MODE BUTTONS
                     }
                 }
             }
+            code.depth = -1;
             ff.autoNext();
         },
         next: function() {
@@ -423,6 +450,9 @@ MODE BUTTONS
             var cur = ff.nextStack.pop();
             var row = cur.row;
             var col = cur.col;
+            if (cur.depth !== code.depth) {
+                //code.curStep++;
+            }
             // Log the direction we came from
             if (typeof cur.direction !== 'undefined') {
                 var dir = cur.direction;
@@ -468,6 +498,7 @@ MODE BUTTONS
             ff.curRow = cur.row;
             ff.curCol = cur.col;
             cur.success = true;
+            code.depth = cur.depth;
             //Up to here
             var curFrame = model.board[cur.row][cur.col];
             curFrame.fromDir = cur.direction; //I added this
@@ -555,12 +586,13 @@ MODE BUTTONS
         }
     };
 
-    var drawArrow = function(context, fromx, fromy, tox, toy, color) {
+    var drawArrow = function(context, fromx, fromy, tox, toy, color, width) {
         var headlen = 10;   // length of head in pixels
         var angle = Math.atan2(toy-fromy,tox-fromx);
         context.beginPath();
         context.strokeStyle = color;
-        context.lineWidth = 1;
+        context.fillStyle = color;
+        context.lineWidth = width;
         context.moveTo(fromx, fromy);
         context.lineTo(tox, toy);
         context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
@@ -669,7 +701,7 @@ MODE BUTTONS
                         // ex.graphics.ctx.moveTo(x0, y0);
                         // ex.graphics.ctx.lineTo(x1, y1);
                         // ex.graphics.ctx.stroke();
-                        drawArrow(ex.graphics.ctx, x0, y0, x1, y1, '#999999');
+                        drawArrow(ex.graphics.ctx, x0, y0, x1, y1, '#CCCCCC', 1);
                     }
                 }
             }
@@ -714,7 +746,7 @@ MODE BUTTONS
                             y1 = y0;
                             break;
                     }
-                    drawArrow(ex.graphics.ctx, x0, y0, x1, y1, 'white');
+                    drawArrow(ex.graphics.ctx, x0, y0, x1, y1, '#FFFFFF', 2);
                 }
             }
         }
@@ -742,8 +774,8 @@ MODE BUTTONS
 
     var drawAll = function(){
         ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
-        drawGrid();
         code.draw();
+        drawGrid();
     };
 
 
