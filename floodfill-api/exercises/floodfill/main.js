@@ -328,6 +328,7 @@ var main = function(ex) {
                                     cell.row = row;
                                     cell.col = col;
                                     cell.success = true;
+                                    cell.depth = 0;
                                     if(next.row - row != 0){
                                         if (next.row - row === 1) {
                                             next.dir = UP;
@@ -341,7 +342,27 @@ var main = function(ex) {
                                             next.dir = RIGHT
                                         };
                                     }
-                                    cell.depth = next.depth;
+                                    if(model.board[row+1]!=undefined){
+                                        if (model.board[row+1][col] != null && model.board[row+1][col].depth >= cell.depth){
+                                            cell.depth = model.board[row+1][col].depth+1;
+                                        }
+                                    }
+                                    if(model.board[row-1]!=undefined){
+                                        if (model.board[row-1][col] != null && model.board[row-1][col].depth >= cell.depth){
+                                            cell.depth = model.board[row-1][col].depth+1;
+                                        }
+                                    }
+                                    if(model.board[row][col+1]!=undefined){
+                                        if (model.board[row][col+1] != null && model.board[row][col+1].depth >= cell.depth){
+                                            cell.depth = model.board[row][col+1].depth+1;
+                                        }
+                                    }
+                                    if(model.board[row][col-1]!=undefined){
+                                        if (model.board[row][col-1] != null && model.board[row][col-1].depth >= cell.depth){
+                                            cell.depth = model.board[row][col-1].depth+1;
+                                        }
+                                    }
+                                    //cell.depth = next.depth;
                                     ff.nextStack.push(next);
                                     ff.nextStack.push(cell);
                                     ff.autoNext();
