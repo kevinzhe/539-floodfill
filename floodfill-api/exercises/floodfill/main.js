@@ -87,6 +87,11 @@ var main = function(ex) {
                     var y = y0-d*offset;
                     ex.graphics.ctx.beginPath();
                     ex.graphics.ctx.strokeStyle = 'black';
+                    ex.graphics.ctx.strokeStyle = "rgb("+
+                        (250*(code.depth-i)/(model.rows*model.cols/2)).toString()
+                        +",0,"+
+                        (255-250*(code.depth-i)/(model.rows*model.cols)).toString()
+                        +")";
                     ex.graphics.ctx.lineWidth = 2;
                     ex.graphics.ctx.fillStyle = 'white'; 
                     ex.graphics.ctx.rect(x, y, w, h);
@@ -489,7 +494,8 @@ MODE BUTTONS
                     }
                 }
             }
-            code.depth = -1;
+            code.depth = 0;
+            code.curStep = 0;
             ff.autoNext();
         },
         next: function() {
@@ -501,9 +507,6 @@ MODE BUTTONS
             var cur = ff.nextStack.pop();
             var row = cur.row;
             var col = cur.col;
-            if (cur.depth !== code.depth) {
-                //code.curStep++;
-            }
             // Log the direction we came from
             if (typeof cur.direction !== 'undefined') {
                 var dir = cur.direction;
@@ -524,6 +527,8 @@ MODE BUTTONS
                 }
                 from.visitedDirs.push(dir);
             }
+            code.curStep = 3-model.dirOrder.indexOf(dir);
+                code.depth = cur.depth-1;
             if (row < 0 || row >= model.cols || col < 0 || col >= model.cols) {
                 cur.success = false;
                 ff.prevStack.push(cur);
@@ -545,11 +550,12 @@ MODE BUTTONS
                 ff.prevStack.push(cur);
                 return FILLED;
             }
+            code.curStep = 0;
+            code.depth = cur.depth;
             //I wrote this
             ff.curRow = cur.row;
             ff.curCol = cur.col;
             cur.success = true;
-            code.depth = cur.depth;
             //Up to here
             var curFrame = model.board[cur.row][cur.col];
             curFrame.fromDir = cur.direction; //I added this
