@@ -112,6 +112,10 @@ var main = function(ex) {
                         ex.graphics.ctx.fillText(t, x+50, yc);
                     };
                 }
+                ex.graphics.ctx.beginPath();
+                ex.graphics.ctx.fillStyle = 'black';
+                ex.graphics.ctx.font = (size*0.5).toString()+'px Courier';
+                ex.graphics.ctx.fillText('Depth: ' + code.depth,x0+10,y0+20);
             },
             remove: function(){
                 for (var i = 0; i < code.dropdowns.length; i++) {
@@ -602,10 +606,12 @@ MODE BUTTONS
             ff.init(ff.initialRow, ff.initialCol);
         },
         stepBack: function(){
-            if (ff.prevStack.length === 0){
+            if (ff.prevStack.length === 1){
                 return DONE;
             }
             var last = ff.prevStack.pop();
+            code.depth = last.depth-1;
+            code.curStep = 3-model.dirOrder.indexOf(last.direction);
             switch (last.direction) {
                 case UP:
                     model.board[last.row+1][last.col].visitedDirs.pop();
