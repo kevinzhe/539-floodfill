@@ -63,9 +63,11 @@ var main = function(ex) {
                 dirOrder = model.dirOrder
                 if(ex.data.meta.assessmentMode == "assessment2"){
                     for(var i = dirOrder.length-1; i >=0; i--){
-                        code.dropdowns.push(ex.createDropdown(2*ex.width()/3,
-                                         (4-i)*ex.height()/6, "",
-                                         {size:"Large",
+                        var x = 8.5*ex.width()/10;
+                        var y = 1.5*ex.height()/10+(4-i)*6*ex.height()/50;
+                        code.dropdowns.push(ex.createDropdown(
+                                         x,y, "",
+                                         {size:"Small",
                                          elements :{
                                          "up"   : makeSelection(i,"up"),
                                          "down" : makeSelection(i,"down"),
@@ -73,6 +75,22 @@ var main = function(ex) {
                                          "right": makeSelection(i,"right")}}
                                          ));
                     }
+                }
+            },
+            drawPlain: function() {
+                var x0 = 9*ex.width()/10;
+                var y0 = 2*ex.height()/10;
+                var w = 3.7*ex.width()/10;
+                var h = 6*ex.height()/10;
+                var t = 'floodfill(         )';
+                var margin = h/5;
+                for (var j = dirOrder.length-1; j >= 0; j--) {
+                    var size = ex.width()/35;
+                    var font = size.toString()+"px Courier";
+                    var yc = y0+(4-j)*margin;
+                    ex.graphics.ctx.font = font;
+                    ex.graphics.ctx.fillStyle = 'black';
+                    ex.graphics.ctx.fillText(t, x0+50, yc);
                 }
             },
             draw: function(){
@@ -838,7 +856,11 @@ MODE BUTTONS
 
     var drawAll = function(){
         ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
-        code.draw();
+        if (ex.data.meta.assessmentMode === 'assessment2') {
+            code.drawPlain();
+        } else {
+            code.draw();
+        }
         drawGrid();
     };
 
