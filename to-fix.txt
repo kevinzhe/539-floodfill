@@ -1,0 +1,10 @@
+ERRORS
+Submit/grading
+Button weirdness
+State
+
+BUGS
+Undo/reset kinda buggy
+
+USABILITY
+Instructions popup
