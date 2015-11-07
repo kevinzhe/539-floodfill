@@ -1,14 +1,17 @@
 var main = function(ex) {
     window.ex = ex;
-    //ex.data.meta.mymode = "practice";
+    //ex.data.meta.mode = "practice";
     //ex.data.meta.mode = "quiz-immediate";
-    ex.data.meta.mymode = "quiz-delay";
+    //ex.data.meta.mode = "quiz-delay";
     ex.data.meta.assessmentMode = "demo";
     //ex.data.meta.assessmentMode = "assessment1"
     //ex.data.meta.assessmentMode = "assessment2"
     //ex.data.meta.assessmentMode = "selfTest"
     var objects = [];
-    var redo = [];
+    var redo    = [];
+    var answers = [];
+    var errors  =  0;
+    var correct =  0;
     var onTimer = ex.onTimer(200,function(){});
     ex.stopTimer(onTimer);
     var instructions = ex.createHeader(20, 9*ex.height()/10,"");
@@ -145,7 +148,8 @@ var main = function(ex) {
 
     var initMode = function(mode){
         ex.stopTimer(onTimer);
-
+        errors  = 0;
+        correct = 0;
         ff.init(Math.floor(Math.random()*model.rows),Math.floor(Math.random()*model.cols));
         ff.reset();
         for (var i = 0; i < objects.length; i++) {
@@ -280,6 +284,7 @@ var main = function(ex) {
                 ff.autoNext();
             }
         });
+        ex.chromeElements.submitButton("click")
 
 
         ex.graphics.on("mousedown", function(event){
@@ -294,23 +299,26 @@ var main = function(ex) {
                 //figure out a way to keep track of what is next
                 if(ff.nextStack.length>0){
                     var next = ff.nextStack.pop();
-                    while(next.row < 0 || next.row >= model.rows ||
+                    while((next.row < 0 || next.row >= model.rows ||
                         next.col < 0 || next.col >= model.cols ||
                         model.board[next.row][next.col] == null ||
-                        model.board[next.row][next.col].visited == true){
+                        model.board[next.row][next.col].visited == true)&&
+                        ff.nextStack.length !== 0){
                         next = ff.nextStack.pop();
                     }
                     if (next.row == row && next.col == col) {
+                        correct += 1;
+                        next.correct = true
                         ff.nextStack.push(next);
                         ff.autoNext();
                         if(ff.nextStack.length === 0){
-                            if(ex.data.meta.mymode !== "quiz-delay"){
+                            if(ex.data.meta.mode !== "quiz-delay"){
                                 ex.showFeedback("Done! Way to go!");
                             };
                         }
 
                     } else {
-                        if(ex.data.meta.mymode !== "quiz-delay"){
+                        if(ex.data.meta.mode !== "quiz-delay"){
                             if (model.board[row][col] === null) {
                                 ex.showFeedback("Incorrect! Blacked out squares are counted as filled in by floodfill,\
                                                     so they won't be filled in again.");
@@ -324,11 +332,13 @@ var main = function(ex) {
                             }
                         } else {
                             if(model.board[row][col] !== null && model.board[row][col].visited === false){
+                                    errors  += 1;
                                     var cell = {};
+                                    cell.correct = false;
                                     cell.row = row;
                                     cell.col = col;
                                     cell.success = true;
-                                    cell.depth = 0;
+                                    cell.depth   = 0;
                                     if(next.row - row != 0){
                                         if (next.row - row === 1) {
                                             next.dir = UP;
@@ -362,7 +372,7 @@ var main = function(ex) {
                                             cell.depth = model.board[row][col-1].depth+1;
                                         }
                                     }
-                                    //cell.depth = next.depth;
+
                                     ff.nextStack.push(next);
                                     ff.nextStack.push(cell);
                                     ff.autoNext();
@@ -401,16 +411,17 @@ var main = function(ex) {
 
         ex.chromeElements.submitButton.on("click", 
             function(){
-                var correct = true;
                 ex.stopTimer(onTimer);
                 for (var i = 0; i < model.dirOrder.length; i++) {
-                    if(model.dirOrder[i] !== ex.data.answers[i]){
-                        correct = false;
+                    if(model.dirOrder[i] !== answers[i]){
+                        errors  += 1;
+                    } else {
+                        correct += 1;
                     }
 
                 }
-                if(ex.data.meta.mymode === "quiz-delay"){
-                    if(correct){
+                if(ex.data.meta.mode !== "quiz-delay"){
+                    if(errors === 0){
                         ex.showFeedback("Correct!!!");
                     } else {
                         ex.showFeedback("Incorrect!!! Try tracing the code as the\
@@ -419,10 +430,12 @@ var main = function(ex) {
                     };
                 }
 
+                ex.setGrade(correct/(correct+errors));
+
             })
     }
 
-
+/*
     var initSelfTest = function(){
         var questions = ["pickLast", "fillIn"]
         for (var i = 0; i < Math.floor(Math.random()*10)+15; i++) {
@@ -441,7 +454,7 @@ var main = function(ex) {
         }
         drawAll();
 
-    }
+    }*/
 
 
 /*
@@ -871,7 +884,7 @@ MODE BUTTONS
 
     var makeSelection = function(i, answer){
         return function(){
-            ex.data.answers[i] = answer;
+            answers[i] = answer;
         }
     }
 
