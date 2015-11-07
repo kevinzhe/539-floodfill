@@ -483,6 +483,25 @@ MODE BUTTONS
                                         initMode("assessment2");
                                     });
 
+    /* from http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array */
+	var shuffle = function(array) {
+	  var currentIndex = array.length, temporaryValue, randomIndex ;
+
+	  // While there remain elements to shuffle...
+	  while (0 !== currentIndex) {
+
+	    // Pick a remaining element...
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+
+	    // And swap it with the current element.
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	  }
+
+	  return array;
+	}
 
 
     var initModel = function() {
@@ -492,12 +511,19 @@ MODE BUTTONS
         }
         model.rows = 5;
         model.cols = 5;
+        var blocked = [];
+        for (var i = 0; i < model.rows*model.cols; i++) {
+        	blocked.push(i);
+        }
+        shuffle(blocked);
+        blocked = blocked.slice(0, Math.floor(0.3*model.rows*model.cols));
+        console.log(blocked);
         var initBoard = function(rows, cols) {
             var board = [];
             for (var i = 0; i < rows; i++) {
                 var row = []
                 for (var j = 0; j < cols; j++) {
-                    if (Math.random() < 0.1) {
+                    if (blocked.indexOf(i*model.cols+j) !== -1) {
                         row.push(null);
                     } else {
                         row.push({
