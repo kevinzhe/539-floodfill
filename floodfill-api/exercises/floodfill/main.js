@@ -2,8 +2,9 @@ var main = function(ex) {
     window.ex = ex;
     //ex.data.meta.mode = "practice";
     //ex.data.meta.mode = "quiz-immediate";
-    //ex.data.meta.mode = "quiz-delay";
-    ex.data.meta.assessmentMode = "demo";
+    ex.data.meta.mode = "quiz-delay";
+    console.log(ex.data.meta.mode);
+    // ex.data.meta.assessmentMode = "demo";
     //ex.data.meta.assessmentMode = "assessment1"
     //ex.data.meta.assessmentMode = "assessment2"
     //ex.data.meta.assessmentMode = "selfTest"
@@ -223,7 +224,7 @@ var main = function(ex) {
              
 
             objects.push(stepBackButton)
-        }
+        };
 
             /*
             --------------
@@ -231,7 +232,7 @@ var main = function(ex) {
             --------------
             */
         var initDemo = function(){
-            instructions.text("Watch how floodfill works!")
+            instructions.text("Watch how floodfill works")
             initPlayButtons();
 
                 //Reset Button
@@ -254,7 +255,7 @@ var main = function(ex) {
         --------------
         */
     var initAssessment1 = function(){
-        instructions.text("Click on the box that should be filled in next!");
+        instructions.text("Click on the box that should be filled in next");
             //Reset Button
         var resetButton = ex.createButton(margin,
                                           4*ex.height()/5, "reset",{
@@ -265,26 +266,19 @@ var main = function(ex) {
                         ff.reset();
             });
 
-        objects.push(resetButton)
+        objects.push(resetButton);
 
-        ex.chromeElements.resetButton.on("click", function(){ff.reset();})
+        ex.chromeElements.resetButton.on("click", function(){
+        	// TODO: ME
+        })
 
         ex.chromeElements.undoButton.on("click", function(){
-            if(ff.prevStack.length > 1){
-                ff.stepBack();
-                redo.push(ff.nextStack.pop());
-                drawAll();
-            }
+        	// TODO: ME
         });
         ex.chromeElements.redoButton.on("click", function(){
-
-            if(redo.length !== 0){
-                var next = redo.pop();
-                ff.nextStack.push(next);
-                ff.autoNext();
-            }
+        	// TODO: ME
         });
-        ex.chromeElements.submitButton("click")
+        //ex.chromeElements.submitButton("click")
 
 
         ex.graphics.on("mousedown", function(event){
@@ -296,94 +290,20 @@ var main = function(ex) {
         var col = Math.floor(x/width);
         var row = Math.floor(y/height);
         if(row >= 0 && row < model.rows && col >= 0 && col < model.cols){
-                //figure out a way to keep track of what is next
-                if(ff.nextStack.length>0){
-                    var next = ff.nextStack.pop();
-                    while((next.row < 0 || next.row >= model.rows ||
-                        next.col < 0 || next.col >= model.cols ||
-                        model.board[next.row][next.col] == null ||
-                        model.board[next.row][next.col].visited == true)&&
-                        ff.nextStack.length !== 0){
-                        next = ff.nextStack.pop();
-                    }
-                    if (next.row == row && next.col == col) {
-                        correct += 1;
-                        next.correct = true
-                        ff.nextStack.push(next);
-                        ff.autoNext();
-                        if(ff.nextStack.length === 0){
-                            if(ex.data.meta.mode !== "quiz-delay"){
-                                ex.showFeedback("Done! Way to go!");
-                            };
-                        }
+        	// click on next cell logic here
+        	var cell = model.board[row][col];
+        	if (cell === null || cell.visited) {
+        		return;
+        	}
+        	console.log(cell);
+        	cell.visited = true;
+        	cell.depth = 2;
+			ff.curRow = row;
+			ff.curCol = col;
 
-                    } else {
-                        if(ex.data.meta.mode !== "quiz-delay"){
-                            if (model.board[row][col] === null) {
-                                ex.showFeedback("Incorrect! Blacked out squares are counted as filled in by floodfill,\
-                                                    so they won't be filled in again.");
-                                ff.nextStack.push(next);
-                            } else if (model.board[row][col].visited) {
-                                ex.showFeedback("Incorrect! That square has already been visited!!");
-                                ff.nextStack.push(next);
-                            } else{
-                                ex.showFeedback("Incorrect! Try to keep track of the order of events!");
-                                ff.nextStack.push(next);
-                            }
-                        } else {
-                            if(model.board[row][col] !== null && model.board[row][col].visited === false){
-                                    errors  += 1;
-                                    var cell = {};
-                                    cell.correct = false;
-                                    cell.row = row;
-                                    cell.col = col;
-                                    cell.success = true;
-                                    cell.depth   = 0;
-                                    if(next.row - row != 0){
-                                        if (next.row - row === 1) {
-                                            next.dir = UP;
-                                        } else if(next.row - row === -1){
-                                            next.dir = DOWN
-                                        }
-                                    } else{
-                                        if (next.col - col === 1) {
-                                            next.dir = LEFT;
-                                        } else if(next.col - col === -1){
-                                            next.dir = RIGHT
-                                        };
-                                    }
-                                    if(model.board[row+1]!=undefined){
-                                        if (model.board[row+1][col] != null && model.board[row+1][col].depth >= cell.depth){
-                                            cell.depth = model.board[row+1][col].depth+1;
-                                        }
-                                    }
-                                    if(model.board[row-1]!=undefined){
-                                        if (model.board[row-1][col] != null && model.board[row-1][col].depth >= cell.depth){
-                                            cell.depth = model.board[row-1][col].depth+1;
-                                        }
-                                    }
-                                    if(model.board[row][col+1]!=undefined){
-                                        if (model.board[row][col+1] != null && model.board[row][col+1].depth >= cell.depth){
-                                            cell.depth = model.board[row][col+1].depth+1;
-                                        }
-                                    }
-                                    if(model.board[row][col-1]!=undefined){
-                                        if (model.board[row][col-1] != null && model.board[row][col-1].depth >= cell.depth){
-                                            cell.depth = model.board[row][col-1].depth+1;
-                                        }
-                                    }
 
-                                    ff.nextStack.push(next);
-                                    ff.nextStack.push(cell);
-                                    ff.autoNext();
-                            } else {
-                                ff.nextStack.push(next);
-                            }
-                        };
-                    }
-                }
+        	drawAll();
         }
-
     });
     }
 
@@ -395,7 +315,7 @@ var main = function(ex) {
         */
     var initAssessment2 = function(){
 
-        instructions.text("Watch the floodfill and fill in the right directions!");
+        instructions.text("Watch the floodfill and fill in the right directions");
         initPlayButtons();
             //Reset Button
         var resetButton = ex.createButton(margin,
@@ -422,9 +342,9 @@ var main = function(ex) {
                 }
                 if(ex.data.meta.mode !== "quiz-delay"){
                     if(errors === 0){
-                        ex.showFeedback("Correct!!!");
+                        ex.showFeedback("Correct!");
                     } else {
-                        ex.showFeedback("Incorrect!!! Try tracing the code as the\
+                        ex.showFeedback("Incorrect! Try tracing the code as the\
                                     board fills and seeing when it changes \
                                     direction");
                     };
@@ -470,14 +390,14 @@ MODE BUTTONS
                                     });
 
     var assess1Button = ex.createButton(ex.width()/2 + 40,
-                                    margin, "Assessment 1").on("click",
+                                    margin, "Trace the fill").on("click",
                                     function(){
                                         ex.data.meta.assessmentMode = "assessment1";
                                         initMode("assessment1");
                                     });
 
-    var assess2Button = ex.createButton(ex.width()/2 + 40 * 4,
-                                    margin, "Assessment 2").on("click",
+    var assess2Button = ex.createButton(ex.width()/2 + 40 * 4-5,
+                                    margin, "Find the order").on("click",
                                     function(){
                                         ex.data.meta.assessmentMode = "assessment2";
                                         initMode("assessment2");
@@ -501,7 +421,7 @@ MODE BUTTONS
 	  }
 
 	  return array;
-	}
+	};
 
 
     var initModel = function() {
@@ -517,7 +437,6 @@ MODE BUTTONS
         }
         shuffle(blocked);
         blocked = blocked.slice(0, Math.floor(0.3*model.rows*model.cols));
-        console.log(blocked);
         var initBoard = function(rows, cols) {
             var board = [];
             for (var i = 0; i < rows; i++) {
@@ -928,7 +847,7 @@ MODE BUTTONS
     
 
     code.init();
-    initMode(ex.data.meta.assessmentMode);
+	assess1Button.trigger('click');
     drawAll();
     
 
