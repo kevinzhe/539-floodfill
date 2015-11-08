@@ -3,7 +3,6 @@ var main = function(ex) {
     //ex.data.meta.mode = "practice";
     //ex.data.meta.mode = "quiz-immediate";
     ex.data.meta.mode = "quiz-delay";
-    console.log(ex.data.meta.mode);
     // ex.data.meta.assessmentMode = "demo";
     //ex.data.meta.assessmentMode = "assessment1"
     //ex.data.meta.assessmentMode = "assessment2"
@@ -114,6 +113,9 @@ var main = function(ex) {
                         +",0,"+
                         (255-250*(code.depth-i)/(model.rows*model.cols)).toString()
                         +")";
+                    if (ex.data.meta.assessmentMode === 'assessment1') {
+                        ex.graphics.ctx.strokeStyle = 'black';
+                    }
                     ex.graphics.ctx.lineWidth = 2;
                     ex.graphics.ctx.fillStyle = 'white'; 
                     ex.graphics.ctx.rect(x, y, w, h);
@@ -127,7 +129,7 @@ var main = function(ex) {
                         var size = ex.width()/35;
                         var font = size.toString()+"px Courier";
                         var yc = y+(4-j)*margin;
-                        if (3-j === code.curStep) {
+                        if (3-j === code.curStep && ex.data.meta.assessmentMode !== 'assessment1') {
                             drawArrow(ex.graphics.ctx,x+15,yc-size/3,x+40,yc-size/3,'black',1);
                         }
                         ex.graphics.ctx.font = font;
@@ -137,7 +139,9 @@ var main = function(ex) {
                 ex.graphics.ctx.beginPath();
                 ex.graphics.ctx.fillStyle = 'black';
                 ex.graphics.ctx.font = (size*0.5).toString()+'px Courier';
-                ex.graphics.ctx.fillText('Depth: ' + code.depth,x0+10,y0+20);
+                if (ex.data.meta.assessmentMode !== 'assessment1') {
+                    ex.graphics.ctx.fillText('Depth: ' + code.depth,x0+10,y0+20);
+                }
             },
             remove: function(){
                 for (var i = 0; i < code.dropdowns.length; i++) {
@@ -199,7 +203,7 @@ var main = function(ex) {
             })
             playButton.on("click", function(){
                 if (playButton.text() == "play") {
-                onTimer = ex.onTimer(200,function () { 
+                onTimer = ex.onTimer(500,function () { 
                             ff.autoNext();
                         });
                 playButton.text("pause");
@@ -255,7 +259,7 @@ var main = function(ex) {
         --------------
         */
     var initAssessment1 = function(){
-        instructions.text("Click on the box that should be filled in next");
+        instructions.text("Click on the box that should be filled in next.");
             //Reset Button
         var resetButton = ex.createButton(margin,
                                           4*ex.height()/5, "reset",{
@@ -269,17 +273,113 @@ var main = function(ex) {
         objects.push(resetButton);
 
         ex.chromeElements.resetButton.on("click", function(){
-        	// TODO: ME
-        })
-
-        ex.chromeElements.undoButton.on("click", function(){
-        	// TODO: ME
+            resetButton.trigger('click');
         });
-        ex.chromeElements.redoButton.on("click", function(){
-        	// TODO: ME
-        });
-        //ex.chromeElements.submitButton("click")
 
+        //ex.chromeElements.undoButton.on("click", function(){
+        //	// TODO: ME
+        //});
+        //ex.chromeElements.redoButton.on("click", function(){
+        //	// TODO: ME
+        //});
+
+        ex.chromeElements.undoButton.disable();
+        ex.chromeElements.redoButton.disable();
+        ex.chromeElements.submitButton.off('click');
+        ex.chromeElements.submitButton.on("click", function() {
+            /* Determine whether or not to end */
+            var clickCount = 0;
+            for (var i = 0; i < model.rows; i++) {
+                for (var j = 0; j < model.cols; j++) {
+                    if (model.board[i][j] !== null && model.board[i][j].visited) {
+                        clickCount++;
+                    }
+                }
+            }
+            if (clickCount < countFill(ff.initialRow, ff.initialCol)) {
+                ex.showFeedback('Not all of the cells have been filled yet.');
+                return;
+            }
+
+            var checkScore = function(r0,c0) {
+                if (model.board[r0][c0] === null) {
+                    return 0;
+                }
+                var initCell = model.board[r0][c0];
+                var visited = [];
+                var scoreFrom = function(r,c,d) {
+                    if (r<0 || r>=model.rows || c<0 || c>=model.cols) {
+                        return 0;
+                    }
+                    var cell = model.board[r][c];
+                    if (cell === null) {
+                        return 0;
+                    }
+                    if (visited.indexOf(r*model.cols+c) !== -1) {
+                        return 0;
+                    }
+                    if (!cell.visited) {
+                        return 'EMPTY';
+                    }
+                    if (cell.depth === null) {
+                        return 0;
+                    }
+                    if (d+1 > cell.depth) {
+                        return 'LARGE';
+                    }
+                    if (d+1 < cell.depth) {
+                        return 0;
+                    }
+                    visited.push(r*model.cols+c);
+                    var score = 1;
+                    for (var dir = 0; dir < model.dirOrder.length; dir++) {
+                        var r1 = r;
+                        var c1 = c;
+                        switch(model.dirOrder[3-dir]) {
+                        case LEFT:
+                            c1--;
+                            break;
+                        case RIGHT:
+                            c1++;
+                            break;
+                        case UP:
+                            r1--;
+                            break;
+                        case DOWN:
+                            r1++;
+                            break;
+                        }
+                        var next = scoreFrom(r1,c1,cell.depth);
+                        if (next === 'LARGE' || next === 'EMPTY') {
+                            break;
+                        }
+                        score += next;
+                    }
+                    return score;
+                };
+                return scoreFrom(r0,c0,initCell.depth-1);
+            };
+
+            var maxScore = 0;
+            for (var i = 0; i < model.rows; i++) {
+                for (var j = 0; j < model.cols; j++) {
+                    var score = checkScore(i,j);  
+                    if (score > maxScore) {
+                        maxScore = score;
+                    }
+                }
+            }
+
+            var score = (maxScore-1);
+            var possibleScore = countFill(ff.initialRow,ff.initialCol)-1;
+           
+            ex.showFeedback('You filled '+score+' out of the '+possibleScore+' cells in the correct order.');
+            ex.setGrade(score/possibleScore);
+
+            ex.submitButton.disable();
+        });
+
+        
 
         ex.graphics.on("mousedown", function(event){
             redo = [];
@@ -295,13 +395,39 @@ var main = function(ex) {
         	if (cell === null || cell.visited) {
         		return;
         	}
-        	console.log(cell);
         	cell.visited = true;
-        	cell.depth = 2;
+            /* Set the cell's depth */
+            var lookCell;
+            var maxDepth = -1;
+            var fromDir = null;
+            if (row-1 >= 0) {
+                lookCell = model.board[row-1][col];
+                if (lookCell !== null && lookCell.depth > maxDepth) {
+                    maxDepth = lookCell.depth;
+                }
+            }
+            if (row+1 < model.rows) {
+                lookCell = model.board[row+1][col];
+                if (lookCell !== null && lookCell.depth > maxDepth) {
+                    maxDepth = lookCell.depth;
+                }
+            }
+            if (col-1 >= 0) {
+                lookCell = model.board[row][col-1];
+                if (lookCell !== null && lookCell.depth > maxDepth) {
+                    maxDepth = lookCell.depth;
+                }
+            }
+            if (col+1 < model.cols) {
+                lookCell = model.board[row][col+1];
+                if (lookCell !== null && lookCell.depth > maxDepth) {
+                    maxDepth = lookCell.depth;
+                }
+            }
+            cell.depth = maxDepth + 1;
+            /* Set the green highlight */
 			ff.curRow = row;
 			ff.curCol = col;
-
-
         	drawAll();
         }
     });
@@ -392,6 +518,9 @@ MODE BUTTONS
     var assess1Button = ex.createButton(ex.width()/2 + 40,
                                     margin, "Trace the fill").on("click",
                                     function(){
+                                        if (ex.data.meta.assessmentMode === 'assessment1') {
+                                            return;
+                                        }
                                         ex.data.meta.assessmentMode = "assessment1";
                                         initMode("assessment1");
                                     });
@@ -399,30 +528,12 @@ MODE BUTTONS
     var assess2Button = ex.createButton(ex.width()/2 + 40 * 4-5,
                                     margin, "Find the order").on("click",
                                     function(){
+                                        if (ex.data.meta.assessmentMode === 'assessment2') {
+                                            return;
+                                        }
                                         ex.data.meta.assessmentMode = "assessment2";
                                         initMode("assessment2");
                                     });
-
-    /* from http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array */
-	var shuffle = function(array) {
-	  var currentIndex = array.length, temporaryValue, randomIndex ;
-
-	  // While there remain elements to shuffle...
-	  while (0 !== currentIndex) {
-
-	    // Pick a remaining element...
-	    randomIndex = Math.floor(Math.random() * currentIndex);
-	    currentIndex -= 1;
-
-	    // And swap it with the current element.
-	    temporaryValue = array[currentIndex];
-	    array[currentIndex] = array[randomIndex];
-	    array[randomIndex] = temporaryValue;
-	  }
-
-	  return array;
-	};
-
 
     var initModel = function() {
         if (typeof ex.data.model !== 'undefined') {
@@ -447,7 +558,7 @@ MODE BUTTONS
                     } else {
                         row.push({
                             visited: false,
-                            depth: 0,
+                            depth: null,
                             fromDir: null,
                             visitedDirs: [],
                             row: i,
@@ -464,6 +575,31 @@ MODE BUTTONS
         ex.data.model = model;
     };
     initModel();
+
+    /* Utility to count how many cells could be filled from a position */
+    var countFill = function(r,c) {
+        var filled = [];
+        var count = 0;
+        var ff = function(r,c) {
+            if (r<0 || r>=model.rows || c<0 || c>=model.cols) {
+                return;
+            }
+            if (model.board[r][c] === null) {
+                return;
+            }
+            if (filled.indexOf(r*model.cols+c) !== -1) {
+                return;
+            }
+            filled.push(r*model.cols+c);
+            count++;
+            ff(r+1,c);
+            ff(r,c+1);
+            ff(r-1,c);
+            ff(r,c-1);
+        };
+        ff(r,c);
+        return count;
+    };
     
     /* The floodfill object */
     var ff = {
@@ -646,7 +782,6 @@ MODE BUTTONS
     };
 
     var drawArrow = function(context, fromx, fromy, tox, toy, color, width) {
-        if (ex.data.meta.assessmentMode !== "assessment1") {
         var headlen = 10;   // length of head in pixels
         var angle = Math.atan2(toy-fromy,tox-fromx);
         context.beginPath();
@@ -659,7 +794,6 @@ MODE BUTTONS
         context.moveTo(tox, toy);
         context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
         context.stroke();
-        }
     };
 
     //Draw the grid
