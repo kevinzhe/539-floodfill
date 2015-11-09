@@ -259,6 +259,65 @@ var main = function(ex) {
         --------------
         */
     var initAssessment1 = function(){
+        var a1data = {
+            clicks: [],
+            redo: [],
+            r0: ff.initialRow,
+            c0: ff.initialCol,
+        };
+
+        var resetA1data = function() {
+            a1data.clicks = [{
+                r:ff.initialRow,
+                c:ff.initialCol
+            }];
+            a1data.redo = [];
+        };
+        resetA1data();
+
+        var loadA1 = function() {
+            /* setup the undo/redo buttons */
+            ex.chromeElements.undoButton.disable();
+            ex.chromeElements.undoButton.off('click');
+            if (a1data.clicks.length > 1) {
+                ex.chromeElements.undoButton.enable();
+                ex.chromeElements.undoButton.on("click", function(){
+                    if (a1data.clicks.length > 1) {
+                        a1data.redo.push(a1data.clicks.pop());
+                        loadA1();
+                    }
+                });
+            }
+            
+            ex.chromeElements.redoButton.disable();
+            ex.chromeElements.redoButton.off('click');
+            if (a1data.redo.length > 0) {
+                ex.chromeElements.redoButton.enable();
+                ex.chromeElements.redoButton.on("click", function(){
+                    if (a1data.redo.length > 0) {
+                        a1data.clicks.push(a1data.redo.pop());
+                        loadA1();
+                    }
+                });
+            }
+            
+            /* redraw everything */
+            ff.reset();
+            for (var i = 0; i < a1data.clicks.length; i++) {
+                var r = a1data.clicks[i].r;
+                var c = a1data.clicks[i].c;
+                var cell = model.board[r][c]
+                if (cell === null) {
+                    return;
+                }
+                cell.visited = true;
+                cell.depth = i;
+            }
+            drawAll();
+
+        };
+
+
         instructions.text("Click on the box that should be filled in next.");
             //Reset Button
         var resetButton = ex.createButton(margin,
@@ -266,8 +325,9 @@ var main = function(ex) {
             width: "40px",
             height: "20px"
             }).on("click", function(){
-                        ex.stopTimer(onTimer);
-                        ff.reset();
+                ex.stopTimer(onTimer);
+                ff.reset();
+                resetA1data();
             });
 
         objects.push(resetButton);
@@ -276,66 +336,66 @@ var main = function(ex) {
             resetButton.trigger('click');
         });
 
-        //ex.chromeElements.undoButton.on("click", function(){
-        //	// TODO: ME
-        //});
-        //ex.chromeElements.redoButton.on("click", function(){
-        //	// TODO: ME
-        //});
-
-        ex.chromeElements.undoButton.disable();
-        ex.chromeElements.redoButton.disable();
         ex.chromeElements.submitButton.off('click');
         ex.chromeElements.submitButton.on("click", function() {
-            /* Determine whether or not to end */
-            var clickCount = 0;
-            for (var i = 0; i < model.rows; i++) {
-                for (var j = 0; j < model.cols; j++) {
-                    if (model.board[i][j] !== null && model.board[i][j].visited) {
-                        clickCount++;
+            var BLOCKED = 'blocked';
+            var UNFILLED = 'unfilled';
+            /* Returns a board with BLOCKED or 0-indexed order of visit */
+            var clicksToBoard = function(startIndex) {
+                var gradingBoard = [];
+                /* Set up the grading board */
+                for (var i = 0; i < model.rows; i++) {
+                    var row = [];
+                    for (var j = 0; j < model.cols; j++) {
+                        if (model.board[i][j] === null) {
+                            row.push(BLOCKED); 
+                        } else {
+                            row.push(UNFILLED);
+                        }
+                    }
+                    gradingBoard.push(row);
+                }
+                /* insert the clicks */
+                for (var i = 0; i < a1data.clicks.length; i++) {
+                    var r = a1data.clicks[i].r;
+                    var c = a1data.clicks[i].c;
+                    if (i < startIndex) {
+                        gradingBoard[r][c] = BLOCKED;
+                    } else {
+                        gradingBoard[r][c] = i - startIndex;
                     }
                 }
-            }
-            if (clickCount < countFill(ff.initialRow, ff.initialCol)) {
-                ex.showFeedback('Not all of the cells have been filled yet.');
-                return;
-            }
-
-            var checkScore = function(r0,c0) {
-                if (model.board[r0][c0] === null) {
-                    return 0;
+                return gradingBoard;
+            };
+           
+            /* examine the grading board */
+            var checkBoard = function(solBoard, r0, c0) {
+                /* Create a blank reference solution board */
+                var refBoard = [];
+                for (var i = 0; i < model.rows; i++) {
+                    var row = [];
+                    for (var j = 0; j < model.cols; j++) {
+                        if (model.board[i][j] === null) {
+                            row.push(BLOCKED);
+                        } else {
+                            row.push(UNFILLED);
+                        }
+                    }
+                    refBoard.push(row);
                 }
-                var initCell = model.board[r0][c0];
-                var visited = [];
-                var scoreFrom = function(r,c,d) {
-                    if (r<0 || r>=model.rows || c<0 || c>=model.cols) {
-                        return 0;
+                /* Fill in the correct answer */
+                var idx = 0;
+                var ff = function(r,c) {
+                    if (r < 0 || r >= model.rows || c < 0 || c >= model.cols ||
+                        refBoard[r][c] === BLOCKED || refBoard[r][c] !== UNFILLED) {
+                        return;
                     }
-                    var cell = model.board[r][c];
-                    if (cell === null) {
-                        return 0;
-                    }
-                    if (visited.indexOf(r*model.cols+c) !== -1) {
-                        return 0;
-                    }
-                    if (!cell.visited) {
-                        return 'EMPTY';
-                    }
-                    if (cell.depth === null) {
-                        return 0;
-                    }
-                    if (d+1 > cell.depth) {
-                        return 'LARGE';
-                    }
-                    if (d+1 < cell.depth) {
-                        return 0;
-                    }
-                    visited.push(r*model.cols+c);
-                    var score = 1;
+                    refBoard[r][c] = idx;
+                    idx++;
                     for (var dir = 0; dir < model.dirOrder.length; dir++) {
-                        var r1 = r;
-                        var c1 = c;
-                        switch(model.dirOrder[3-dir]) {
+                        r1 = r;
+                        c1 = c;
+                        switch(model.dirOrder[3-dir]) {  /* It's reversed D: */
                         case LEFT:
                             c1--;
                             break;
@@ -349,27 +409,61 @@ var main = function(ex) {
                             r1++;
                             break;
                         }
-                        var next = scoreFrom(r1,c1,cell.depth);
-                        if (next === 'LARGE' || next === 'EMPTY') {
-                            break;
-                        }
-                        score += next;
-                    }
-                    return score;
+                        ff(r1,c1);
+                    };
                 };
-                return scoreFrom(r0,c0,initCell.depth-1);
-            };
-
-            var maxScore = 0;
-            for (var i = 0; i < model.rows; i++) {
-                for (var j = 0; j < model.cols; j++) {
-                    var score = checkScore(i,j);  
-                    if (score > maxScore) {
-                        maxScore = score;
+                ff(r0,c0);
+                /* helper to get the r,c of some index */
+                var getRC = function(b,idx) {
+                    for (var i = 0; i < b.length; i++) {
+                        for (var j = 0; j < b[i].length; j++) {
+                            if (b[i][j] === idx) {
+                                return {
+                                    r: i,
+                                    c: j
+                                };
+                            }
+                        }
+                    }
+                };
+                /* now find the score */
+                var maxidx = -1;
+                for (var i = 0; i < solBoard.length; i++) {
+                    for (var j = 0; j < solBoard[i].length; j++) {
+                        if (solBoard[i][j] !== BLOCKED &&
+                            solBoard[i][j] !== UNFILLED &&
+                            solBoard[i][j] > maxidx) {
+                            maxidx = solBoard[i][j];
+                        }
                     }
                 }
-            }
+                var score = 0;
+                console.log(solBoard, refBoard);
+                for (var i = 0; i <= maxidx; i++) {
+                    var student = getRC(solBoard, i);
+                    var ref = getRC(refBoard, i);
+                    if (student.r !== ref.r || student.c !== ref.c) {
+                        return score;
+                    } else {
+                        score++;
+                    }
+                }
+                return score;
+            };
 
+
+            /* Now see what the max score is */
+            var maxScore = -1;
+            for (var i = 0; i < a1data.clicks.length; i++) {
+                var click = a1data.clicks[i];
+                var r = click.r;
+                var c = click.c;
+                var score = checkBoard(clicksToBoard(i),r,c);
+                console.log(r,c, score);
+                if (score > maxScore) {
+                    maxScore = score;
+                }
+            }
             var score = (maxScore-1);
             var possibleScore = countFill(ff.initialRow,ff.initialCol)-1;
            
@@ -380,9 +474,7 @@ var main = function(ex) {
         });
 
         
-
         ex.graphics.on("mousedown", function(event){
-            redo = [];
         var width = (ex.width()/2)/model.cols;
         var height = (5*ex.height()/7)/model.rows;
         var x = event.offsetX - margin;
@@ -395,40 +487,9 @@ var main = function(ex) {
         	if (cell === null || cell.visited) {
         		return;
         	}
-        	cell.visited = true;
-            /* Set the cell's depth */
-            var lookCell;
-            var maxDepth = -1;
-            var fromDir = null;
-            if (row-1 >= 0) {
-                lookCell = model.board[row-1][col];
-                if (lookCell !== null && lookCell.depth > maxDepth) {
-                    maxDepth = lookCell.depth;
-                }
-            }
-            if (row+1 < model.rows) {
-                lookCell = model.board[row+1][col];
-                if (lookCell !== null && lookCell.depth > maxDepth) {
-                    maxDepth = lookCell.depth;
-                }
-            }
-            if (col-1 >= 0) {
-                lookCell = model.board[row][col-1];
-                if (lookCell !== null && lookCell.depth > maxDepth) {
-                    maxDepth = lookCell.depth;
-                }
-            }
-            if (col+1 < model.cols) {
-                lookCell = model.board[row][col+1];
-                if (lookCell !== null && lookCell.depth > maxDepth) {
-                    maxDepth = lookCell.depth;
-                }
-            }
-            cell.depth = maxDepth + 1;
-            /* Set the green highlight */
-			ff.curRow = row;
-			ff.curCol = col;
-        	drawAll();
+            a1data.clicks.push({r:row,c:col});
+            a1data.redo = [];
+            loadA1();
         }
     });
     }
@@ -540,8 +601,8 @@ MODE BUTTONS
             model = ex.data.model;
             return;
         }
-        model.rows = 5;
-        model.cols = 5;
+        model.rows = 4;
+        model.cols = 4;
         var blocked = [];
         for (var i = 0; i < model.rows*model.cols; i++) {
         	blocked.push(i);
@@ -816,11 +877,15 @@ MODE BUTTONS
                                             height);
                 } else {
                     ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
-                    ex.graphics.ctx.fillStyle = "rgb("+
-                        (250*cell.depth/(model.rows*model.cols/2)).toString()
-                        +",0,"+
-                        (255-250*cell.depth/(model.rows*model.cols)).toString()
-                        +")";
+                    if (ex.data.meta.assessmentMode !== 'assessment1') {
+                        ex.graphics.ctx.fillStyle = "rgb("+
+                            (250*cell.depth/(model.rows*model.cols/2)).toString()
+                            +",0,"+
+                            (255-250*cell.depth/(model.rows*model.cols)).toString()
+                            +")";
+                    } else {
+                        ex.graphics.ctx.fillStyle = 'blue';
+                    }
                     if (cell.visited) {
                         // visited cell
                         ex.graphics.ctx.fillRect(xpos + margin,
