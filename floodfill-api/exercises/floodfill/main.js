@@ -503,6 +503,7 @@ var main = function(ex) {
             loadA1();
         }
     });
+        loadA1();
     }
 
 
@@ -1067,6 +1068,9 @@ MODE BUTTONS
             initMode('demo');
         } else {
             initMode('assessment1');
+            a1data = ex.data.instance.state.a1data;
+            ff.initialRow = ex.data.instance.state.initialRow;
+            ff.initialCol = ex.data.instance.state.initialCol;
         }
         drawAll();
         save();
