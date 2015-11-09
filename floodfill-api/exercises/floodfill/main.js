@@ -166,7 +166,7 @@ var main = function(ex) {
         ex.stopTimer(onTimer);
         errors  = 0;
         correct = 0;
-        //ff.reset();
+        ff.reset();
         for (var i = 0; i < objects.length; i++) {
             objects[i].remove();
             };
@@ -581,33 +581,34 @@ var main = function(ex) {
 MODE BUTTONS
 --------------
 */
-    var demoButton = ex.createButton(ex.width()/2 + 40 * 7,
-                                    margin, "Demo Mode").on("click",
-                                    function(){
-                                        ex.data.assessmentMode = "demo";
-                                        initMode("demo");
-                                    });
-
-    var assess1Button = ex.createButton(ex.width()/2 + 40,
-                                    margin, "Trace the fill").on("click",
-                                    function(){
-                                        if (ex.data.assessmentMode === 'assessment1') {
-                                            return;
-                                        }
-                                        ex.data.assessmentMode = "assessment1";
-                                        initMode("assessment1");
-                                    });
-
-    var assess2Button = ex.createButton(ex.width()/2 + 40 * 4-5,
-                                    margin, "Find the order").on("click",
-                                    function(){
-                                        if (ex.data.assessmentMode === 'assessment2') {
-                                            return;
-                                        }
-                                        ex.data.assessmentMode = "assessment2";
-                                        initMode("assessment2");
-                                    });
-
+    if(ex.data.meta.mode === "practice"){
+        var demoButton = ex.createButton(ex.width()/2 + 40 * 7,
+                                        margin, "Demo Mode").on("click",
+                                        function(){
+                                            ex.data.assessmentMode = "demo";
+                                            initMode("demo");
+                                        });
+    
+        var assess1Button = ex.createButton(ex.width()/2 + 40,
+                                        margin, "Trace the fill").on("click",
+                                        function(){
+                                            if (ex.data.assessmentMode === 'assessment1') {
+                                                return;
+                                            }
+                                            ex.data.assessmentMode = "assessment1";
+                                            initMode("assessment1");
+                                        });
+    
+        var assess2Button = ex.createButton(ex.width()/2 + 40 * 4-5,
+                                        margin, "Find the order").on("click",
+                                        function(){
+                                            if (ex.data.assessmentMode === 'assessment2') {
+                                                return;
+                                            }
+                                            ex.data.assessmentMode = "assessment2";
+                                            initMode("assessment2");
+                                        });
+    }
     var initModel = function() {
         model.rows = 5;
         model.cols = 5;
@@ -1075,9 +1076,6 @@ MODE BUTTONS
         drawAll();
         save();
     }
-
-    
-
 
 
 };
