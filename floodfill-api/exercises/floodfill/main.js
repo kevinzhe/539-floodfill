@@ -3,10 +3,10 @@ var main = function(ex) {
     //ex.data.meta.mode = "practice";
     //ex.data.meta.mode = "quiz-immediate";
     // ex.data.meta.mode = "quiz-delay";
-    // ex.data.meta.assessmentMode = "demo";
-    //ex.data.meta.assessmentMode = "assessment1"
-    //ex.data.meta.assessmentMode = "assessment2"
-    //ex.data.meta.assessmentMode = "selfTest"
+    // ex.data.assessmentMode = "demo";
+    //ex.data.assessmentMode = "assessment1"
+    //ex.data.assessmentMode = "assessment2"
+    //ex.data.assessmentMode = "selfTest"
     var objects = [];
     var redo    = [];
     var answers = [];
@@ -64,7 +64,7 @@ var main = function(ex) {
             curStep  : 0,
             init: function(){
                 dirOrder = model.dirOrder
-                if(ex.data.meta.assessmentMode == "assessment2"){
+                if(ex.data.assessmentMode == "assessment2"){
                     for(var i = dirOrder.length-1; i >=0; i--){
                         var x = 8.5*ex.width()/10;
                         var y = 1.5*ex.height()/10+(4-i)*6*ex.height()/50;
@@ -113,7 +113,7 @@ var main = function(ex) {
                         +",0,"+
                         (255-250*(code.depth-i)/(model.rows*model.cols)).toString()
                         +")";
-                    if (ex.data.meta.assessmentMode === 'assessment1') {
+                    if (ex.data.assessmentMode === 'assessment1') {
                         ex.graphics.ctx.strokeStyle = 'black';
                     }
                     ex.graphics.ctx.lineWidth = 2;
@@ -129,7 +129,7 @@ var main = function(ex) {
                         var size = ex.width()/35;
                         var font = size.toString()+"px Courier";
                         var yc = y+(4-j)*margin;
-                        if (3-j === code.curStep && ex.data.meta.assessmentMode !== 'assessment1') {
+                        if (3-j === code.curStep && ex.data.assessmentMode !== 'assessment1') {
                             drawArrow(ex.graphics.ctx,x+15,yc-size/3,x+40,yc-size/3,'black',1);
                         }
                         ex.graphics.ctx.font = font;
@@ -139,7 +139,7 @@ var main = function(ex) {
                 ex.graphics.ctx.beginPath();
                 ex.graphics.ctx.fillStyle = 'black';
                 ex.graphics.ctx.font = (size*0.5).toString()+'px Courier';
-                if (ex.data.meta.assessmentMode !== 'assessment1') {
+                if (ex.data.assessmentMode !== 'assessment1') {
                     ex.graphics.ctx.fillText('Depth: ' + code.depth,x0+10,y0+20);
                 }
             },
@@ -572,27 +572,27 @@ MODE BUTTONS
     var demoButton = ex.createButton(ex.width()/2 + 40 * 7,
                                     margin, "Demo Mode").on("click",
                                     function(){
-                                        ex.data.meta.assessmentMode = "demo";
+                                        ex.data.assessmentMode = "demo";
                                         initMode("demo");
                                     });
 
     var assess1Button = ex.createButton(ex.width()/2 + 40,
                                     margin, "Trace the fill").on("click",
                                     function(){
-                                        if (ex.data.meta.assessmentMode === 'assessment1') {
+                                        if (ex.data.assessmentMode === 'assessment1') {
                                             return;
                                         }
-                                        ex.data.meta.assessmentMode = "assessment1";
+                                        ex.data.assessmentMode = "assessment1";
                                         initMode("assessment1");
                                     });
 
     var assess2Button = ex.createButton(ex.width()/2 + 40 * 4-5,
                                     margin, "Find the order").on("click",
                                     function(){
-                                        if (ex.data.meta.assessmentMode === 'assessment2') {
+                                        if (ex.data.assessmentMode === 'assessment2') {
                                             return;
                                         }
-                                        ex.data.meta.assessmentMode = "assessment2";
+                                        ex.data.assessmentMode = "assessment2";
                                         initMode("assessment2");
                                     });
 
@@ -877,7 +877,7 @@ MODE BUTTONS
                                             height);
                 } else {
                     ex.graphics.ctx.font = (ex.width()/35).toString()+"px Courier";
-                    if (ex.data.meta.assessmentMode !== 'assessment1') {
+                    if (ex.data.assessmentMode !== 'assessment1') {
                         ex.graphics.ctx.fillStyle = "rgb("+
                             (250*cell.depth/(model.rows*model.cols/2)).toString()
                             +",0,"+
@@ -1034,7 +1034,7 @@ MODE BUTTONS
 
     var drawAll = function(){
         ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
-        if (ex.data.meta.assessmentMode === 'assessment2') {
+        if (ex.data.assessmentMode === 'assessment2') {
             code.drawPlain();
         } else {
             code.draw();
