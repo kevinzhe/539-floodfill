@@ -332,27 +332,8 @@ var main = function(ex) {
 
         objects.push(resetButton);
 
-<<<<<<< HEAD
-        ex.chromeElements.undoButton.on("click", function(){
-            if(ff.prevStack.length > 1){
-                var last = ff.prevStack.pop();
-                code.depth = last.depth-1;
-                
-                model.board[last.row][last.col].visited = false;
-                ff.curCol = last.col;
-                ff.curRow = last.rows;
-                ff.nextStack.push(last);
-
-                //ff.stepBack();
-                var next = ff.nextStack.pop();
-                redo.push(last);
-                ff.nextStack.push(last)
-                drawAll();
-            }
-=======
         ex.chromeElements.resetButton.on("click", function(){
             resetButton.trigger('click');
->>>>>>> 993da7f55e0834543f489739cfc9e3c639e46a5e
         });
 
         ex.chromeElements.submitButton.off('click');
@@ -492,12 +473,6 @@ var main = function(ex) {
 
             ex.submitButton.disable();
         });
-<<<<<<< HEAD
-        ex.chromeElements.submitButton.on("click", function(){})
-
-=======
->>>>>>> 993da7f55e0834543f489739cfc9e3c639e46a5e
-
         
         ex.graphics.on("mousedown", function(event){
         var width = (ex.width()/2)/model.cols;
@@ -507,98 +482,6 @@ var main = function(ex) {
         var col = Math.floor(x/width);
         var row = Math.floor(y/height);
         if(row >= 0 && row < model.rows && col >= 0 && col < model.cols){
-<<<<<<< HEAD
-                //figure out a way to keep track of what is next
-                if(ff.nextStack.length>0){
-                    var next = ff.nextStack.pop();
-                    if (next.row == row && next.col == col) {
-                        correct += 1;
-                        next.correct = true
-                        ff.nextStack.push(next);
-                        ff.autoNext();
-                        if(ff.nextStack.length === 0){
-                            if(ex.data.meta.mode !== "quiz-delay"){
-                                ex.showFeedback("Done! Way to go!");
-                            };
-                        }
-
-                    } else {
-                        if(ex.data.meta.mode !== "quiz-delay"){
-                            if (model.board[row][col] === null) {
-                                ex.showFeedback("Incorrect! Blacked out squares are counted as filled in by floodfill,\
-                                                    so they won't be filled in again.");
-                                ff.nextStack.push(next);
-                            } else if (model.board[row][col].visited) {
-                                ex.showFeedback("Incorrect! That square has already been visited!!");
-                                ff.nextStack.push(next);
-                            } else{
-                                ex.showFeedback("Incorrect! Try to keep track of the order of events!");
-                                ff.nextStack.push(next);
-                            }
-                        } else {
-                            if(model.board[row][col] !== null && model.board[row][col].visited === false){
-                                    errors  += 1;
-                                    var cell = {};
-                                    cell.correct = false;
-                                    cell.row = row;
-                                    cell.col = col;
-                                    cell.success = true;
-                                    cell.depth   = 0;
-                                    if(next.row - row != 0){
-                                        if (next.row - row === 1) {
-                                            next.dir = UP;
-                                        } else if(next.row - row === -1){
-                                            next.dir = DOWN
-                                        }
-                                    } else{
-                                        if (next.col - col === 1) {
-                                            next.dir = LEFT;
-                                        } else if(next.col - col === -1){
-                                            next.dir = RIGHT
-                                        };
-                                    }
-                                    if(model.board[row+1]!=undefined){
-                                        if (model.board[row+1][col] != null && model.board[row+1][col].depth >= cell.depth){
-                                            cell.depth = model.board[row+1][col].depth+1;
-                                        }
-                                    }
-                                    if(model.board[row-1]!=undefined){
-                                        if (model.board[row-1][col] != null && model.board[row-1][col].depth >= cell.depth){
-                                            cell.depth = model.board[row-1][col].depth+1;
-                                        }
-                                    }
-                                    if(model.board[row][col+1]!=undefined){
-                                        if (model.board[row][col+1] != null && model.board[row][col+1].depth >= cell.depth){
-                                            cell.depth = model.board[row][col+1].depth+1;
-                                        }
-                                    }
-                                    if(model.board[row][col-1]!=undefined){
-                                        if (model.board[row][col-1] != null && model.board[row][col-1].depth >= cell.depth){
-                                            cell.depth = model.board[row][col-1].depth+1;
-                                        }
-                                    }
-
-                                    ff.nextStack.push(next);
-                                    ff.nextStack.push(cell);
-                                    ff.autoNext();
-                            } else {
-                                ff.nextStack.push(next);
-                            }
-                        };
-                    }
-                }
-        }
-        var next = ff.nextStack.pop()
-        while((next.row < 0 || next.row >= model.rows ||
-            next.col < 0 || next.col >= model.cols ||
-            model.board[next.row][next.col] == null ||
-            model.board[next.row][next.col].visited == true)&&
-            ff.nextStack.length !== 0){
-            next = ff.nextStack.pop();
-        }
-        ff.nextStack.push(next)
-
-=======
         	// click on next cell logic here
         	var cell = model.board[row][col];
         	if (cell === null || cell.visited) {
@@ -608,7 +491,6 @@ var main = function(ex) {
             a1data.redo = [];
             loadA1();
         }
->>>>>>> 993da7f55e0834543f489739cfc9e3c639e46a5e
     });
     }
 
