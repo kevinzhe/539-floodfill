@@ -50,6 +50,16 @@ var main = function(ex) {
     var MOVED       = 'move';
     var DONE        = 'done';
 
+    /* save state helper */
+    var save = function() {
+        ex.saveState({
+            model: ex.data.model,
+            initialRow: ff.initialRow,
+            initialCol: ff.initialCol,
+            a1data: a1data,
+        });
+    };
+
 
     var margin = 20
     /* Initialize our model fields */
@@ -258,8 +268,9 @@ var main = function(ex) {
         INIT ASSESSMENT1 MODE
         --------------
         */
+    var a1data = {};
     var initAssessment1 = function(){
-        var a1data = {
+        a1data = {
             clicks: [],
             redo: [],
             r0: ff.initialRow,
@@ -635,7 +646,6 @@ MODE BUTTONS
         model.dirOrder = shuffle([UP, RIGHT, DOWN, LEFT]);
         ex.data.model = model;
     };
-    initModel();
 
     /* Utility to count how many cells could be filled from a position */
     var countFill = function(r,c) {
@@ -1043,11 +1053,29 @@ MODE BUTTONS
     };
 
 
-    
+    if (ex.data.instance.state === null) {
+        initModel();
+        code.init();
+        if (ex.data.meta.mode === 'practice') {
+            initMode('demo');
+            drawAll();
+        } else {
+            initMode('assessment1');
+        }
+        drawAll();
+        save();
+    } else {
+        model = ex.data.instance.state.model;
+        code.init();
+        if (ex.data.meta.mode === 'practice') {
+            initMode('demo');
+        } else {
+            initMode('assessment1');
+        }
+        drawAll();
+        save();
+    }
 
-    code.init();
-	assess1Button.trigger('click');
-    drawAll();
     
 
 
