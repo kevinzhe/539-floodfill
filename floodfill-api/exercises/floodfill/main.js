@@ -271,8 +271,18 @@ var main = function(ex) {
 
         ex.chromeElements.undoButton.on("click", function(){
             if(ff.prevStack.length > 1){
-                ff.stepBack();
-                redo.push(ff.nextStack.pop());
+                var last = ff.prevStack.pop();
+                code.depth = last.depth-1;
+                
+                model.board[last.row][last.col].visited = false;
+                ff.curCol = last.col;
+                ff.curRow = last.rows;
+                ff.nextStack.push(last);
+
+                //ff.stepBack();
+                var next = ff.nextStack.pop();
+                redo.push(last);
+                ff.nextStack.push(last)
                 drawAll();
             }
         });
@@ -284,7 +294,7 @@ var main = function(ex) {
                 ff.autoNext();
             }
         });
-        ex.chromeElements.submitButton("click")
+        ex.chromeElements.submitButton.on("click", function(){})
 
 
         ex.graphics.on("mousedown", function(event){
@@ -299,13 +309,6 @@ var main = function(ex) {
                 //figure out a way to keep track of what is next
                 if(ff.nextStack.length>0){
                     var next = ff.nextStack.pop();
-                    while((next.row < 0 || next.row >= model.rows ||
-                        next.col < 0 || next.col >= model.cols ||
-                        model.board[next.row][next.col] == null ||
-                        model.board[next.row][next.col].visited == true)&&
-                        ff.nextStack.length !== 0){
-                        next = ff.nextStack.pop();
-                    }
                     if (next.row == row && next.col == col) {
                         correct += 1;
                         next.correct = true
@@ -383,6 +386,15 @@ var main = function(ex) {
                     }
                 }
         }
+        var next = ff.nextStack.pop()
+        while((next.row < 0 || next.row >= model.rows ||
+            next.col < 0 || next.col >= model.cols ||
+            model.board[next.row][next.col] == null ||
+            model.board[next.row][next.col].visited == true)&&
+            ff.nextStack.length !== 0){
+            next = ff.nextStack.pop();
+        }
+        ff.nextStack.push(next)
 
     });
     }
