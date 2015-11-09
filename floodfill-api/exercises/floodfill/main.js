@@ -53,10 +53,11 @@ var main = function(ex) {
     /* save state helper */
     var save = function() {
         ex.saveState({
-            model: ex.data.model,
+            model: model,
             initialRow: ff.initialRow,
             initialCol: ff.initialCol,
             a1data: a1data,
+            exists: true
         });
     };
 
@@ -165,8 +166,7 @@ var main = function(ex) {
         ex.stopTimer(onTimer);
         errors  = 0;
         correct = 0;
-        ff.init(Math.floor(Math.random()*model.rows),Math.floor(Math.random()*model.cols));
-        ff.reset();
+        //ff.reset();
         for (var i = 0; i < objects.length; i++) {
             objects[i].remove();
             };
@@ -608,10 +608,6 @@ MODE BUTTONS
                                     });
 
     var initModel = function() {
-        if (typeof ex.data.model !== 'undefined') {
-            model = ex.data.model;
-            return;
-        }
         model.rows = 5;
         model.cols = 5;
         var blocked = [];
@@ -644,7 +640,6 @@ MODE BUTTONS
         };
         model.board = initBoard(model.rows, model.cols);
         model.dirOrder = shuffle([UP, RIGHT, DOWN, LEFT]);
-        ex.data.model = model;
     };
 
     /* Utility to count how many cells could be filled from a position */
@@ -1053,7 +1048,8 @@ MODE BUTTONS
     };
 
 
-    if (ex.data.instance.state === null) {
+    if (ex.data.instance.state === null ||
+        ex.data.instance.state.exists !== true) {
         initModel();
         code.init();
         if (ex.data.meta.mode === 'practice') {
