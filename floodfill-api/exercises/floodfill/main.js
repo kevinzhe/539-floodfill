@@ -2,7 +2,7 @@ var main = function(ex) {
     window.ex = ex;
     //ex.data.meta.mode = "practice";
     //ex.data.meta.mode = "quiz-immediate";
-    ex.data.meta.mode = "quiz-delay";
+    // ex.data.meta.mode = "quiz-delay";
     // ex.data.meta.assessmentMode = "demo";
     //ex.data.meta.assessmentMode = "assessment1"
     //ex.data.meta.assessmentMode = "assessment2"
@@ -466,9 +466,10 @@ var main = function(ex) {
             }
             var score = (maxScore-1);
             var possibleScore = countFill(ff.initialRow,ff.initialCol)-1;
-           
-            ex.showFeedback('You filled '+score+' out of the '+possibleScore+' cells in the correct order.');
-            ex.setGrade(score/possibleScore);
+            
+            var feedbackString = 'You filled '+score+' out of the '+possibleScore+' cells in the correct order.';
+            ex.showFeedback(feedbackString);
+            ex.setGrade(score/possibleScore, feedbackString);
 
             ex.submitButton.disable();
         });
@@ -601,8 +602,8 @@ MODE BUTTONS
             model = ex.data.model;
             return;
         }
-        model.rows = 4;
-        model.cols = 4;
+        model.rows = 5;
+        model.cols = 5;
         var blocked = [];
         for (var i = 0; i < model.rows*model.cols; i++) {
         	blocked.push(i);
