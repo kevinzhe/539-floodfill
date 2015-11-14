@@ -59,7 +59,12 @@ var main = function(ex) {
             a1data: a1data,
             exists: true
         });
+        console.log('saved');
     };
+    
+    ex.graphics.on('click', function() {
+        window.setTimeout(save, 400);
+    });
 
 
     var margin = 20
@@ -166,7 +171,7 @@ var main = function(ex) {
         ex.stopTimer(onTimer);
         errors  = 0;
         correct = 0;
-        //ff.reset();
+        ff.reset();
         for (var i = 0; i < objects.length; i++) {
             objects[i].remove();
             };
@@ -270,21 +275,27 @@ var main = function(ex) {
         */
     var a1data = {};
     var initAssessment1 = function(){
-        a1data = {
-            clicks: [],
-            redo: [],
-            r0: ff.initialRow,
-            c0: ff.initialCol,
-        };
+        
+        ex.data.assessmentMode = 'assessment1';
 
         var resetA1data = function() {
+            a1data = {
+                clicks: [],
+                redo: [],
+                r0: ff.initialRow,
+                c0: ff.initialCol,
+                submitted: false
+            };
             a1data.clicks = [{
                 r:ff.initialRow,
                 c:ff.initialCol
             }];
             a1data.redo = [];
         };
-        resetA1data();
+        
+        if (JSON.stringify(a1data) === '{}') {
+            resetA1data();
+        }
 
         var loadA1 = function() {
             /* setup the undo/redo buttons */
@@ -346,9 +357,20 @@ var main = function(ex) {
         ex.chromeElements.resetButton.on("click", function(){
             resetButton.trigger('click');
         });
+        
+        if (a1data.submitted) {
+            ex.chromeElements.submitButton.disable();
+        }
 
         ex.chromeElements.submitButton.off('click');
         ex.chromeElements.submitButton.on("click", function() {
+            if (a1data.submitted) {
+                return;
+            }
+            
+            ex.graphics.off('mousedown');
+            a1data.submitted = true;
+            
             var BLOCKED = 'blocked';
             var UNFILLED = 'unfilled';
             /* Returns a board with BLOCKED or 0-indexed order of visit */
@@ -482,7 +504,7 @@ var main = function(ex) {
             ex.showFeedback(feedbackString);
             ex.setGrade(score/possibleScore, feedbackString);
 
-            ex.submitButton.disable();
+            ex.chromeElements.submitButton.disable();
         });
         
         ex.graphics.on("mousedown", function(event){
@@ -493,11 +515,11 @@ var main = function(ex) {
         var col = Math.floor(x/width);
         var row = Math.floor(y/height);
         if(row >= 0 && row < model.rows && col >= 0 && col < model.cols){
-        	// click on next cell logic here
-        	var cell = model.board[row][col];
-        	if (cell === null || cell.visited) {
-        		return;
-        	}
+            // click on next cell logic here
+            var cell = model.board[row][col];
+            if (cell === null || cell.visited) {
+                return;
+            }
             a1data.clicks.push({r:row,c:col});
             a1data.redo = [];
             loadA1();
@@ -581,39 +603,40 @@ var main = function(ex) {
 MODE BUTTONS
 --------------
 */
-    var demoButton = ex.createButton(ex.width()/2 + 40 * 7,
-                                    margin, "Demo Mode").on("click",
-                                    function(){
-                                        ex.data.assessmentMode = "demo";
-                                        initMode("demo");
-                                    });
-
-    var assess1Button = ex.createButton(ex.width()/2 + 40,
-                                    margin, "Trace the fill").on("click",
-                                    function(){
-                                        if (ex.data.assessmentMode === 'assessment1') {
-                                            return;
-                                        }
-                                        ex.data.assessmentMode = "assessment1";
-                                        initMode("assessment1");
-                                    });
-
-    var assess2Button = ex.createButton(ex.width()/2 + 40 * 4-5,
-                                    margin, "Find the order").on("click",
-                                    function(){
-                                        if (ex.data.assessmentMode === 'assessment2') {
-                                            return;
-                                        }
-                                        ex.data.assessmentMode = "assessment2";
-                                        initMode("assessment2");
-                                    });
-
+    if(ex.data.meta.mode === "practice"){
+        var demoButton = ex.createButton(ex.width()/2 + 40 * 7,
+                                        margin, "Demo Mode").on("click",
+                                        function(){
+                                            ex.data.assessmentMode = "demo";
+                                            initMode("demo");
+                                        });
+    
+        var assess1Button = ex.createButton(ex.width()/2 + 40,
+                                        margin, "Trace the fill").on("click",
+                                        function(){
+                                            if (ex.data.assessmentMode === 'assessment1') {
+                                                return;
+                                            }
+                                            ex.data.assessmentMode = "assessment1";
+                                            initMode("assessment1");
+                                        });
+    
+        var assess2Button = ex.createButton(ex.width()/2 + 40 * 4-5,
+                                        margin, "Find the order").on("click",
+                                        function(){
+                                            if (ex.data.assessmentMode === 'assessment2') {
+                                                return;
+                                            }
+                                            ex.data.assessmentMode = "assessment2";
+                                            initMode("assessment2");
+                                        });
+    }
     var initModel = function() {
         model.rows = 5;
         model.cols = 5;
         var blocked = [];
         for (var i = 0; i < model.rows*model.cols; i++) {
-        	blocked.push(i);
+            blocked.push(i);
         }
         shuffle(blocked);
         blocked = blocked.slice(0, Math.floor(0.3*model.rows*model.cols));
@@ -1047,10 +1070,14 @@ MODE BUTTONS
         }
         drawGrid();
     };
+    
+    console.log('loading ff');
+    console.log(ex.data.instance.state);
 
 
     if (ex.data.instance.state === null ||
         ex.data.instance.state.exists !== true) {
+        console.log('creating new state');
         initModel();
         code.init();
         if (ex.data.meta.mode === 'practice') {
@@ -1062,22 +1089,23 @@ MODE BUTTONS
         drawAll();
         save();
     } else {
+        console.log('loading from state');
         model = ex.data.instance.state.model;
         code.init();
         if (ex.data.meta.mode === 'practice') {
             initMode('demo');
         } else {
-            initMode('assessment1');
             a1data = ex.data.instance.state.a1data;
             ff.initialRow = ex.data.instance.state.initialRow;
             ff.initialCol = ex.data.instance.state.initialCol;
+            initMode('assessment1');
         }
         drawAll();
-        save();
     }
 
     
-
+    window.ff = ff;
+    window.model = model;
 
 
 };
