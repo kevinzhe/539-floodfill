@@ -1103,10 +1103,5 @@ MODE BUTTONS
         drawAll();
     }
 
-    
-    window.ff = ff;
-    window.model = model;
-
-
 };
 
